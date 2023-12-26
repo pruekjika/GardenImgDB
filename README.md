@@ -5,5 +5,7 @@ https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0BiV
 
 what will store here will be
 
-- the downscale of `main_image` ~ 2mb for each image // resize by using `file converter` to .jpg setting with `clamp to lowest power of 2 size`
-- the finished `fixed_image`
+- the downscale of `main_image` ~ 2mb for each (original ~ 20mb each)
+- the finished `fixed_image` ~ 2mb each
+
+all img is downscale by using `file converter` to .jpg setting with `clamp to lowest power of 2 size`
