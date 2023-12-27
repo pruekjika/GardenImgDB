@@ -2,7 +2,7 @@ import React from "react";
 import CompareImageSlider from "./CompareImageSlider.js";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
-const CompareZoomPanPinch = () => {
+const CompareZoomPanPinch = (props: { img1: string; img2: string }) => {
   return (
     <TransformWrapper
       initialScale={1}
@@ -21,7 +21,9 @@ const CompareZoomPanPinch = () => {
             <button onClick={() => zoomOut()}>zoomOut -</button>
             <button onClick={() => resetTransform()}>Reset</button>
           </div>
-          <TransformComponent>{<CompareImageSlider />}</TransformComponent>
+          <TransformComponent>
+            {<CompareImageSlider img1={props.img1} img2={props.img2} />}
+          </TransformComponent>
         </React.Fragment>
       )}
     </TransformWrapper>

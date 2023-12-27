@@ -26,11 +26,13 @@
   scale: 1;
   user-select: none; /* Standard syntax */
   transition: all 100ms ease-in-out;
+  border-radius: 0.4rem;
 }
 
 .image-container:hover {
   filter: grayscale(0%);
   scale: 1.05;
+  border-radius: 1rem;
 }
 
 .center {
