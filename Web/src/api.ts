@@ -24,7 +24,13 @@ export async function fetchImagesFromRepo(
       .map((item: any) => ({
         name: item.name,
         url: item.download_url,
-      }));
+      }))
+      .sort((a: Image, b: Image) => {
+        const regex = /\d+/g;
+        const aNumber = Number(a.name.match(regex)?.[0]);
+        const bNumber = Number(b.name.match(regex)?.[0]);
+        return aNumber - bNumber;
+      });
 
     return images;
   } catch (error) {

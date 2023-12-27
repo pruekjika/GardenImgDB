@@ -1,9 +1,7 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import CompareZoomPanPinch from "./Components/CompareZoomPanPinch";
 import ImageGallery from "./Components/ImageGallery";
 import { fetchImagesFromRepo } from "./api";
-
 import { Image } from "./Image";
 
 const owner = "pruekjika";
@@ -25,8 +23,8 @@ function App() {
 
   return (
     <>
+      {/* image gallery if final call because it easier to send image button data to compare */}
       <ImageGallery images={images} />
-      <CompareZoomPanPinch />
     </>
   );
 }

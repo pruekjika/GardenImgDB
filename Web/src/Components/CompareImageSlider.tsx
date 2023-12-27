@@ -20,9 +20,9 @@ const CompareImageSlider = (props: { img1: string; img2: string }) => {
               WebkitBackdropFilter: "none",
               boxShadow: "none",
             }}
-            linesStyle={{
-              opacity: 0,
-            }}
+            // linesStyle={{
+            //   opacity: 0,
+            // }}
           />
         }
         keyboardIncrement='5%'

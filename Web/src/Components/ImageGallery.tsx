@@ -44,11 +44,12 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             imgName={image.name}
             onClick={() => handleImageClick(image)}
             style={{
-              border: isSelected(image) ? "2px solid blue" : "none",
+              border: isSelected(image) ? "2px solid #00FFFF" : "none",
             }}
           />
         ))}
       </div>
+
       <CompareZoomPanPinch
         img1={selectedImages[0]?.url || Img1}
         img2={selectedImages[1]?.url || Img2}
