@@ -3,23 +3,13 @@
 // `https://api.github.com/repos/pruekjika/GardenImgDB/contents/ImageDB/Fixed/`
 import { Image } from "./Image";
 
-const accessToken = import.meta.env.VITE_GITHUB_ACCESS_TOKEN;
-if (!accessToken) {
-  throw new Error("GitHub access token not found");
-}
-
 export async function fetchImagesFromRepo(
   owner: string,
   repo: string
 ): Promise<Image[]> {
   try {
     const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`,
-      {
-        headers: {
-          Authorization: `token ${accessToken}`,
-        },
-      }
+      `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch repository contents");
