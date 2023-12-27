@@ -1,6 +1,6 @@
 import "./App.css";
-// import firstImage from "https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__1.jpg";
-// import secondImage from "https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__70.jpg";
+// import firstImage from "../../ImageDB/Fixed/__1.jpg";
+// import secondImage from "../../ImageDB/Fixed/__19.jpg";
 
 import {
   ReactCompareSlider,
