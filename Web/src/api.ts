@@ -17,7 +17,7 @@ export async function fetchImagesFromRepo(
       `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`,
       {
         headers: {
-          Authorization: `token ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     );
