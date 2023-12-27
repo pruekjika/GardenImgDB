@@ -14,7 +14,9 @@ const ImageObject = (props: {
     >
       <img src={props.imgUrl} alt={`Image ${props.imgName}`} />
       <div className='center'>
-        <p className='image-index'>{`${props.imgName}`}</p>
+        <p className='image-index'>{`${props.imgName
+          .replace("__", "")
+          .replace(".jpg", "")}`}</p>
         <p className='date'>{`${props.imgName}`}</p>
       </div>
     </div>
