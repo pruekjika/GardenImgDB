@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CompareZoomPanPinch from "./Components/CompareZoomPanPinch";
 import ImageGallery from "./Components/ImageGallery";
 import { fetchImagesFromRepo } from "./api";
@@ -15,6 +15,7 @@ function App() {
   useEffect(() => {
     fetchImagesFromRepo(owner, repo)
       .then((images) => {
+        console.log(images);
         setImages(images);
       })
       .catch((error) => {

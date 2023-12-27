@@ -1,12 +1,21 @@
 import "./ImageGallery.css";
 
-const ImageObject = (props: { image: string; index: number }) => {
+const ImageObject = (props: {
+  imgUrl: string;
+  imgName: string;
+  style: React.CSSProperties;
+  onClick: () => void;
+}) => {
   return (
-    <div className='image-container'>
-      <img src={props.image} alt={`Image ${props.index}`} />
+    <div
+      className='image-container'
+      onClick={props.onClick}
+      style={props.style}
+    >
+      <img src={props.imgUrl} alt={`Image ${props.imgName}`} />
       <div className='center'>
-        <p className='image-index'>{`${props.index + 1}`}</p>
-        <p className='date'>{`${props.index}`}</p>
+        <p className='image-index'>{`${props.imgName}`}</p>
+        <p className='date'>{`${props.imgName}`}</p>
       </div>
     </div>
   );

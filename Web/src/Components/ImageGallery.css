@@ -12,6 +12,7 @@
   border-radius: 0.4rem;
   opacity: 0.5;
   transition: all 100ms ease-in-out;
+  filter: grayscale(100%);
 }
 
 .image-gallery img:hover {
@@ -22,7 +23,6 @@
 .image-container {
   position: relative;
   cursor: pointer;
-  filter: grayscale(100%);
   scale: 1;
   user-select: none; /* Standard syntax */
   transition: all 100ms ease-in-out;
