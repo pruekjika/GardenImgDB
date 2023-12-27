@@ -19,11 +19,11 @@ const ImageObject = (props: {
         alt={`Image ${props.imgName}`}
         sizes='(max-width: 100px) 90px, 73px'
       />
-      <div className='center'>
-        <p className='image-index'>{`${props.imgName
+      <div className='center-text'>
+        <p className='text-img-name'>{`${props.imgName
           .replace("__", "")
           .replace(".webp", "")}`}</p>
-        <p className='date'>{`${props.imgName}`}</p>
+        <p className='text-img-date'>{`${props.imgName}`}</p>
       </div>
     </div>
   );

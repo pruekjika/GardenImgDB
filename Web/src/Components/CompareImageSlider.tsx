@@ -28,8 +28,8 @@ const CompareImageSlider = (props: { img1: string; img2: string }) => {
         keyboardIncrement='5%'
         position={50}
         style={{
-          height: "100vh",
-          width: "100vw",
+          height: "100%",
+          width: "100%",
         }}
       />
     </div>

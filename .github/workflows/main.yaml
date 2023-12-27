@@ -6,14 +6,13 @@ on:
       - main
 
 jobs:
-  build:
+  use_api:
     runs-on: ubuntu-latest
-
+    permissions: {}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build and deploy
+      - env:
+          GH_TOKEN: ${{ secrets.VITE_GITHUB_ACCESS_TOKEN }}
         run: |
-          # Your build and deploy commands here
-          echo ${{ secrets.VITE_GITHUB_ACCESS_TOKEN }}
+          curl --request GET \
+          --url "`https://api.github.com/repos/pruekjika/GardenImgDB/contents/ImageDB/Fixed/" \
+          --header "Authorization: Bearer $GH_TOKEN"
