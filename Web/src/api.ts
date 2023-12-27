@@ -12,8 +12,7 @@ export async function fetchImagesFromRepo(
       `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`,
       {
         headers: {
-          Authorization:
-            "Bearer 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",
+          Authorization: "token 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",
         },
       }
     );
