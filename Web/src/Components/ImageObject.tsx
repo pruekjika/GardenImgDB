@@ -12,11 +12,17 @@ const ImageObject = (props: {
       onClick={props.onClick}
       style={props.style}
     >
-      <img src={props.imgUrl} alt={`Image ${props.imgName}`} />
+      <img
+        src={props.imgUrl}
+        loading='lazy'
+        decoding='async'
+        alt={`Image ${props.imgName}`}
+        sizes='(max-width: 100px) 90px, 73px'
+      />
       <div className='center'>
         <p className='image-index'>{`${props.imgName
           .replace("__", "")
-          .replace(".jpg", "")}`}</p>
+          .replace(".webp", "")}`}</p>
         <p className='date'>{`${props.imgName}`}</p>
       </div>
     </div>

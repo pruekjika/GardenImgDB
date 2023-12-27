@@ -14,3 +14,5 @@ what will store here will be
 - the finished `fixed_image` ~ 2mb each
 
 all img is downscale by using `file converter` to .jpg setting with `clamp to lowest power of 2 size`
+
+// new system use to `.webp`

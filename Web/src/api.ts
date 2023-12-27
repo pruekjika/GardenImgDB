@@ -19,7 +19,7 @@ export async function fetchImagesFromRepo(
     const images: Image[] = data
       .filter(
         (item: any) =>
-          item.type === "file" && item.path.match(/\.(jpeg|jpg|png|gif)$/i)
+          item.type === "file" && item.path.match(/\.(jpeg|jpg|png|gif|webp)$/i)
       )
       .map((item: any) => ({
         name: item.name,
