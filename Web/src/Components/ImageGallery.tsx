@@ -11,7 +11,7 @@ const ImageGallery: React.FC<ImageGallery> = ({ images }) => {
   return (
     <div className='image-gallery'>
       {images.map((image, index) => (
-        <ImageObject image={image.url} index={index} />
+        <ImageObject key={image.name} image={image.url} index={index} />
       ))}
     </div>
   );
