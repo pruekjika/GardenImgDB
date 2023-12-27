@@ -1,11 +1,8 @@
 import "./App.css";
+import React, { useEffect, useState } from "react";
 import CompareZoomPanPinch from "./Components/CompareZoomPanPinch";
 import ImageGallery from "./Components/ImageGallery";
-
-interface Image {
-  name: string;
-  url: string;
-}
+import { Image } from "./Image";
 
 async function fetchImagesFromRepo(
   owner: string,
@@ -39,11 +36,12 @@ async function fetchImagesFromRepo(
 
 const owner = "pruekjika";
 const repo = "GardenImgDB";
+let github_images: Image[];
 
 fetchImagesFromRepo(owner, repo)
   .then((images) => {
     console.log(images);
-    console.log("wow");
+    github_images = images;
   })
   .catch((error) => {
     console.error("Error:", error);
@@ -52,7 +50,7 @@ fetchImagesFromRepo(owner, repo)
 function App() {
   return (
     <>
-      {/* <ImageGallery images={images} /> */}
+      <ImageGallery images={github_images} />
       <CompareZoomPanPinch />
     </>
   );
