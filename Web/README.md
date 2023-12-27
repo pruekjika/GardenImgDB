@@ -10,3 +10,5 @@ create `.env` file and add line below to pc
 ```
 VITE_GITHUB_ACCESS_TOKEN={{token}}
 ```
+
+and add github secret
