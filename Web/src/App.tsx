@@ -1,6 +1,6 @@
 import "./App.css";
-import firstImage from "../../ImageDB/Fixed/__1.jpg";
-import secondImage from "../../ImageDB/Fixed/__19.jpg";
+// import firstImage from "https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__1.jpg";
+// import secondImage from "https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__70.jpg";
 
 import {
   ReactCompareSlider,
@@ -15,10 +15,16 @@ function App() {
           <ReactCompareSlider
             boundsPadding={0}
             itemOne={
-              <ReactCompareSliderImage alt='Image one' src={firstImage} />
+              <ReactCompareSliderImage
+                alt='Image one'
+                src='https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__1.jpg'
+              />
             }
             itemTwo={
-              <ReactCompareSliderImage alt='Image two' src={secondImage} />
+              <ReactCompareSliderImage
+                alt='Image two'
+                src='https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__70.jpg'
+              />
             }
             keyboardIncrement='5%'
             position={50}
