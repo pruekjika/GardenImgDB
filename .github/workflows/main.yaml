@@ -14,5 +14,5 @@ jobs:
           GH_TOKEN: ${{ secrets.VITE_GITHUB_ACCESS_TOKEN }}
         run: |
           curl --request GET \
-          --url "`https://api.github.com/repos/pruekjika/GardenImgDB/contents/ImageDB/Fixed/" \
+          --url "https://api.github.com/repos/pruekjika/GardenImgDB/contents/ImageDB/Fixed/" \
           --header "Authorization: Bearer $GH_TOKEN"
