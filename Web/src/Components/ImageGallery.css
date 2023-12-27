@@ -34,7 +34,7 @@
 }
 
 .is-not-selected {
-  border: "none";
+  border: 4px solid transparent;
 }
 
 .image-container:hover {
@@ -56,8 +56,8 @@
 }
 .image-container:hover .text-img-name {
   font-weight: bolder;
-  color: rgba(255, 255, 255, 0.837);
   font-size: x-large;
+  color: rgb(255, 255, 255);
 }
 
 .text-img-name {
