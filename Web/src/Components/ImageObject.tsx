@@ -12,7 +12,7 @@ const ImageObject = (props: {
         <p className='text-img-name'>{`${props.imgName
           .replace("__", "")
           .replace(".webp", "")}`}</p>
-        <p className='text-img-date'>{`${props.imgName}`}</p>
+        {/* <p className='text-img-date'>{`${props.imgName}`}</p> */}
       </div>
     </div>
   );

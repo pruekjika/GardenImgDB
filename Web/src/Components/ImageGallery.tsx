@@ -36,7 +36,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
 
   return (
     <div>
-      <div className='image-gallery'>
+      <div className='image-gallery '>
         {images.map((image) => (
           <ImageObject
             key={image.name}

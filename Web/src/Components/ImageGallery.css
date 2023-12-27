@@ -16,9 +16,10 @@
   display: grid;
   grid-template-columns: repeat(15, 1fr);
   grid-gap: 0.5rem;
-  height: 400px;
+  min-height: 400px;
   max-height: fit-content;
   margin: 0;
+  overflow: auto;
 }
 
 .image-container {
@@ -74,4 +75,36 @@
   color: rgba(255, 255, 255, 0.251);
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+/* ============== Med Devices(ipad) ============== */
+@media screen and (max-width: 1124px) {
+  .image-gallery {
+    padding: 1rem;
+    grid-template-columns: repeat(8, 1fr);
+    grid-gap: 0.5rem;
+    min-height: 800px;
+    max-height: fit-content;
+  }
+}
+
+/* ============== Small Devices(phone) ============== */
+@media screen and (max-width: 664px) {
+  .image-gallery {
+    padding: 1rem;
+    grid-template-columns: repeat(6, 1fr);
+    grid-gap: 0.8rem;
+    min-height: 1000px;
+    max-height: fit-content;
+  }
+}
+
+@media screen and (max-width: 300px) {
+  .image-gallery {
+    padding: 0.4rem;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 0.8rem;
+    min-height: 1100px;
+    max-height: fit-content;
+  }
 }
