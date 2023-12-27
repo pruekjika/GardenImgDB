@@ -40,9 +40,12 @@ jobs:
           node-version: 18
           cache: "npm"
           cache-dependency-path: Web/package-lock.json
+          working-directory: ./Web
       - name: Install dependencies
+        working-directory: ./Web
         run: npm install
       - name: Build
+        working-directory: ./Web
         run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
