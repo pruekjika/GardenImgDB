@@ -1,6 +1,7 @@
 import {
   ReactCompareSlider,
   ReactCompareSliderImage,
+  ReactCompareSliderHandle,
 } from "react-compare-slider";
 
 const CompareSlider = () => {
@@ -19,6 +20,19 @@ const CompareSlider = () => {
           <ReactCompareSliderImage
             alt='Image two'
             src='https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__71.jpg'
+          />
+        }
+        handle={
+          <ReactCompareSliderHandle
+            buttonStyle={{
+              border: 0,
+              backdropFilter: "none",
+              WebkitBackdropFilter: "none",
+              boxShadow: "none",
+            }}
+            linesStyle={{
+              opacity: 0,
+            }}
           />
         }
         keyboardIncrement='5%'
