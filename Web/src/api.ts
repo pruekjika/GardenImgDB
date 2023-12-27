@@ -3,6 +3,11 @@
 // `https://api.github.com/repos/pruekjika/GardenImgDB/contents/ImageDB/Fixed/`
 import { Image } from "./Image";
 
+const accessToken = import.meta.env.VITE_GITHUB_ACCESS_TOKEN;
+if (!accessToken) {
+  throw new Error("GitHub access token not found");
+}
+
 export async function fetchImagesFromRepo(
   owner: string,
   repo: string
@@ -12,7 +17,7 @@ export async function fetchImagesFromRepo(
       `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`,
       {
         headers: {
-          Authorization: "token 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",
+          Authorization: `token ${accessToken}`,
         },
       }
     );
