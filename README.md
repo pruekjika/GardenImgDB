@@ -15,4 +15,4 @@ what will store here will be
 
 all img is downscale by using `file converter` to .jpg setting with `clamp to lowest power of 2 size`
 
-// new system use to `.webp`
+// new system use to `.webp` with `clamp to lowest power of 2 size` so that final size = `4096x3072` = divide by 2 from original

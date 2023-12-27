@@ -9,7 +9,12 @@ export async function fetchImagesFromRepo(
 ): Promise<Image[]> {
   try {
     const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`
+      `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`,
+      {
+        headers: {
+          Authorization: `Bearer ${"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"}`,
+        },
+      }
     );
     if (!response.ok) {
       throw new Error("Failed to fetch repository contents");
