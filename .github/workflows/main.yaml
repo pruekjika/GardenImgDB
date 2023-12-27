@@ -16,4 +16,4 @@ jobs:
       - name: Build and deploy
         run: |
           # Your build and deploy commands here
-          echo ${{ secrets.ACCESS_TOKEN }}
+          echo ${{ secrets.VITE_GITHUB_ACCESS_TOKEN }}
