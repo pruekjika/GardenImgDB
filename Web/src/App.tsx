@@ -20,9 +20,9 @@ function App() {
           {({ zoomIn, zoomOut, resetTransform }) => (
             <React.Fragment>
               <div className='tools'>
-                <button onClick={() => zoomIn()}>+</button>
-                <button onClick={() => zoomOut()}>-</button>
-                <button onClick={() => resetTransform()}>x</button>
+                <button onClick={() => zoomIn()}>zoomIn +</button>
+                <button onClick={() => zoomOut()}>zoomOut -</button>
+                <button onClick={() => resetTransform()}>Reset</button>
               </div>
               <TransformComponent>{<CompareSlider />}</TransformComponent>
             </React.Fragment>
