@@ -16,5 +16,3 @@ what will store here will be
 all img is downscale by using `file converter` to .jpg setting with `clamp to lowest power of 2 size`
 
 // new system use to `.webp` with `clamp to lowest power of 2 size` so that final size = `4096x3072` = divide by 2 from original
-
-[Deploying a Vite app on GitHub Pages using GitHub Actions with GitHub Secrets - DEV Community](https://dev.to/dwtoledo/deploying-a-vite-app-on-github-pages-using-github-actions-with-github-secrets-1hn0)

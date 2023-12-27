@@ -1,42 +1,31 @@
 this is my first time pull image from github folder
-it have limit to Rate-limits (up to `60 per-hour` for anonymous, up to 5,000 per-hour for authenticated) read more
+it have limit to Rate-limits (up to `60 per-hour` for anonymous, up to 5,000 per-hour for authenticated)
 
 [How to get a file via GitHub APIs - Stack Overflow](https://stackoverflow.com/questions/9272535/how-to-get-a-file-via-github-apis)
 
 need to do authenticated to make it more stable by
 
-create `.env` file and add line below to pc
+1.  create `.env` file and add line below to pc
 
 ```
 VITE_GITHUB_ACCESS_TOKEN={{token}}
 ```
 
-and add github secret
+2. and add github secret in github
 
-สรุปเรื่อง token คือ เหมือนว่าถ้าทำตาม
-[Authenticating to the REST API - GitHub Docs](https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api?apiVersion=2022-11-28)
-ด้วยการเพิ่ม workflow อันนี้
+3. ยังคงการเรียก header ตามด้านล่าง
 
-```yaml
-name: CI
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  use_api:
-    runs-on: ubuntu-latest
-    permissions: {}
-    steps:
-      - env:
-          GH_TOKEN: ${{ secrets.VITE_GITHUB_ACCESS_TOKEN }}
-        run: |
-          curl --request GET \
-          --url "https://api.github.com/repos/pruekjika/GardenImgDB/contents/ImageDB/Fixed/" \
-          --header "Authorization: Bearer $GH_TOKEN"
+```tsx
+const response = await fetch(
+  `https://api.github.com/repos/${owner}/${repo}/contents/ImageDB/Fixed/`,
+  {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  }
+);
 ```
 
-เราจะไม่ต้องเรียกอะไรพิเศษ ตอน fetch ใน script แล้ว
-พระเจ้า เข้าใจยากมากๆเลย
+4. ให้ทำการ build vite ผ่าน github action โดย ทำตามนี้
+
+   [Deploying a Vite app on GitHub Pages using GitHub Actions with GitHub Secrets - DEV Community](https://dev.to/dwtoledo/deploying-a-vite-app-on-github-pages-using-github-actions-with-github-secrets-1hn0)
