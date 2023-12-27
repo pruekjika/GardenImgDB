@@ -44,7 +44,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             imgName={image.name}
             onClick={() => handleImageClick(image)}
             style={{
-              border: isSelected(image) ? "2px solid #00FFFF" : "none",
+              border: isSelected(image) ? "4px solid #00b7fa" : "none",
             }}
           />
         ))}
