@@ -6,17 +6,21 @@
     <title>Image Compare</title>
     <link rel="stylesheet" type="text/css" href="WebView/style.css" />
     <!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+    <base href="{{site.baseurl}}" />
   </head>
   <body>
+    <!-- For styles with static names... -->
+    <link href="{{ 'assets/css/style.css' | relative_url }}" rel="stylesheet" />
+    <!-- For documents/pages whose URLs can change... -->
     <div class="container">
       <h3>Image compare</h3>
 
       <div class="img-comp-container">
         <div class="img-comp-img">
-          <img src="/ImageDB/Fixed/__20.jpg" width="1000" height="700" />
+          <img src="ImageDB/Fixed/__20.jpg" width="1000" height="700" />
         </div>
         <div class="img-comp-img img-comp-overlay">
-          <img src="/ImageDB/Fixed/__1.jpg" width="1000" height="700" />
+          <img src="ImageDB/Fixed/__1.jpg" width="1000" height="700" />
         </div>
       </div>
     </div>
