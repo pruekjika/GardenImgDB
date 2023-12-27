@@ -4,24 +4,19 @@ import {
   ReactCompareSliderHandle,
 } from "react-compare-slider";
 
-const CompareSlider = () => {
+const Img1 =
+  "https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__2.jpg";
+const Img2 =
+  "https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__71.jpg";
+
+const CompareImageSlider = () => {
   return (
     <div>
       <ReactCompareSlider
         onlyHandleDraggable={true}
         boundsPadding={0}
-        itemOne={
-          <ReactCompareSliderImage
-            alt='Image one'
-            src='https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__2.jpg'
-          />
-        }
-        itemTwo={
-          <ReactCompareSliderImage
-            alt='Image two'
-            src='https://raw.githubusercontent.com/pruekjika/GardenImgDB/main/ImageDB/Fixed/__71.jpg'
-          />
-        }
+        itemOne={<ReactCompareSliderImage alt='Image one' src={Img1} />}
+        itemTwo={<ReactCompareSliderImage alt='Image two' src={Img2} />}
         handle={
           <ReactCompareSliderHandle
             buttonStyle={{
@@ -39,11 +34,11 @@ const CompareSlider = () => {
         position={50}
         style={{
           height: "100vh",
-          width: "100%",
+          width: "100vw",
         }}
       />
     </div>
   );
 };
 
-export default CompareSlider;
+export default CompareImageSlider;
