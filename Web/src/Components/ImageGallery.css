@@ -16,6 +16,9 @@
   display: grid;
   grid-template-columns: repeat(15, 1fr);
   grid-gap: 0.5rem;
+  height: 400px;
+  max-height: fit-content;
+  margin: 0;
 }
 
 .image-container {
@@ -27,14 +30,15 @@
   border-radius: 0.4rem;
   text-align: center;
   background-color: black;
+  margin: 0;
 }
 
 .is-selected {
-  border: 4px solid #00b7fa;
+  border: 5px solid #00b7fa;
 }
 
 .is-not-selected {
-  border: 4px solid transparent;
+  border: 5px solid transparent;
 }
 
 .image-container:hover {
@@ -68,6 +72,6 @@
 
 .text-img-date {
   color: rgba(255, 255, 255, 0.251);
-  font-size: smaller;
+  font-size: 0.8rem;
   font-weight: 600;
 }
