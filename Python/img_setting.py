@@ -29,12 +29,12 @@ class SettingManager:
         SettingManager.change_working_path(SettingManager.work_path)
         SettingManager.log_change_dir()
 
-    def check_if_list(tocheck):
-        return True if type(tocheck) is list else False
+    def check_if_list(to_check):
+        return True if isinstance(to_check) is list else False
 
     @staticmethod
     def save_setting(matchSetting, json_write_path: str = json_file_path):
-        """recieve matchSetting as array
+        """receive matchSetting as array
 
         Args:
             json_write_path (str): path to write
@@ -97,7 +97,9 @@ class SettingManager:
         return len(glob.glob1(path, "*.jpg"))
 
     @staticmethod
-    def update_setting_target_array_to_jpg_count(json_setting_path: str = json_file_path, jpeg_path: str = ""):
+    def update_setting_target_array_to_jpg_count(
+        json_setting_path: str = json_file_path, jpeg_path: str = ""
+    ):
         def update_to_new_value(_old_setting, _new_number):
             if SettingManager.check_if_list(_old_setting):
                 new_setting = []
@@ -123,15 +125,24 @@ class SettingManager:
 def main():
     def save_test_data():
         today = [16]
-        array_setting_1 = img_class.SettingForArray("8", "", r"", r"FixImg\0-main-fix", today, 90000, 0.01)
-        array_setting_2 = img_class.SettingForArray("10", "", r"Zoom-1-Top", r"FixImg\1-Top-fix", today, 90000, 0.01)
+        array_setting_1 = img_class.SettingForArray(
+            "8", "", r"", r"FixImg\0-main-fix", today, 90000, 0.01
+        )
+        array_setting_2 = img_class.SettingForArray(
+            "10", "", r"Zoom-1-Top", r"FixImg\1-Top-fix", today, 90000, 0.01
+        )
         array_setting_3 = img_class.SettingForArray(
             "10", "", r"Zoom-2-Middle", r"FixImg\2-Middle-fix", today, 90000, 0.01
         )
         array_setting_4 = img_class.SettingForArray(
             "10", "", r"Zoom-3-Bottom", r"FixImg\3-Bottom-fix", today, 90000, 0.01
         )
-        call_array = [array_setting_1, array_setting_2, array_setting_3, array_setting_4]
+        call_array = [
+            array_setting_1,
+            array_setting_2,
+            array_setting_3,
+            array_setting_4,
+        ]
         SettingManager.save_setting(call_array)
 
     def load_test():
