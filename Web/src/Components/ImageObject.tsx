@@ -3,22 +3,11 @@ import "./ImageGallery.css";
 const ImageObject = (props: {
   imgUrl: string;
   imgName: string;
-  style: React.CSSProperties;
+  style: string;
   onClick: () => void;
 }) => {
   return (
-    <div
-      className='image-container'
-      onClick={props.onClick}
-      style={props.style}
-    >
-      <img
-        src={props.imgUrl}
-        loading='lazy'
-        decoding='async'
-        alt={`Image ${props.imgName}`}
-        sizes='(max-width: 100px) 90px, 73px'
-      />
+    <div className={`image-container ${props.style}`} onClick={props.onClick}>
       <div className='center-text'>
         <p className='text-img-name'>{`${props.imgName
           .replace("__", "")
