@@ -26,3 +26,47 @@
 30-Dec-2023 04:25:59 remove D:\Github\GardenImgDB\__75.jpg!
 30-Dec-2023 04:26:03 [[D:\Github\GardenImgDB\__74.jpg]] created!
 30-Dec-2023 04:26:04 copy metadata from D:\Github\GardenImgDB\NowImage-ToMatch-BIG\74.jpg | use img D:\Github\GardenImgDB\__74.jpg to D:\Github\GardenImgDB\__74.jpg
+30-Dec-2023 04:30:44 ref:__77, fix:73 key:15000 factor:0.005
+30-Dec-2023 04:30:48 [D:\Github\GardenImgDB\__73.jpg] created!
+30-Dec-2023 04:30:48 copy metadata from D:\Github\GardenImgDB\NowImage-ToMatch-BIG\73.jpg | use img D:\Github\GardenImgDB\__73.jpg to D:\Github\GardenImgDB\__73.jpg
+30-Dec-2023 04:31:21 ref:__77, fix:72 key:15000 factor:0.005
+30-Dec-2023 04:31:25 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:31:25 copy metadata from D:\Github\GardenImgDB\NowImage-ToMatch-BIG\72.jpg | use img D:\Github\GardenImgDB\__72.jpg to D:\Github\GardenImgDB\__72.jpg
+30-Dec-2023 04:35:10 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:35:10 log: ref:__77 fix:72 key:15000 factor:0.005
+30-Dec-2023 04:35:14 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:38:03 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:38:03 R__77/72/key:25000/fac:0.005
+30-Dec-2023 04:38:08 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:39:06 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:39:06 R-__77 f-72 key-35000 fac-0.005
+30-Dec-2023 04:39:11 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:39:19 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:39:19 R-__77 f-72 key-15000 fac-0.004
+30-Dec-2023 04:39:21 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:40:30 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:40:30 ref=__77=>72 key-25000 fac-0.001
+30-Dec-2023 04:40:35 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:42:42 ref:'__77' fix:'72' key:25000 fac:0.005
+30-Dec-2023 04:42:47 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:43:26 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:43:26 ref:'__77' fix:'72' key:16000 fac:0.005
+30-Dec-2023 04:43:30 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:44:19 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:44:19 ref:'__77' fix:'72' key:16000 fac:0.005
+30-Dec-2023 04:44:22 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:45:47 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:45:47 ref:'__49' fix:'72' key:16000 fac:0.005
+30-Dec-2023 04:45:51 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:46:01 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:46:01 ref:'__49' fix:'72' key:26000 fac:0.001
+30-Dec-2023 04:46:06 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:46:13 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:46:13 ref:'__49' fix:'72' key:13000 fac:0.001
+30-Dec-2023 04:46:16 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:46:21 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:46:21 ref:'__49' fix:'72' key:13000 fac:0.01
+30-Dec-2023 04:46:24 [D:\Github\GardenImgDB\__72.jpg] created!
+30-Dec-2023 04:47:04 remove D:\Github\GardenImgDB\__72.jpg!
+30-Dec-2023 04:47:04 ref:'__72' fix:'73' key:13000 fac:0.01
+30-Dec-2023 04:47:08 [D:\Github\GardenImgDB\__73.jpg] created!

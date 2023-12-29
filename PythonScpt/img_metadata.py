@@ -11,11 +11,13 @@ def copy_metadata_from_to(from_path, to_path, new_path=None):
         new_path (str, optional): in case I want it in new file. Defaults to None.
     """
 
-    def save_img(_img_to_save, _img_path):
+    def save_img(_img_to_save, _img_path, do_log=False):
         _img_to_save.save(_img_path, "JPEG", exif=exif)
-        logger.info(
-            f"copy metadata from {from_path} | use img {to_path} to {_img_path}"
-        )
+
+        if do_log:
+            logger.info(
+                f"copy metadata from {from_path} | use img {to_path} to {_img_path}"
+            )
 
     image_ref = Image.open(from_path)
     exif = image_ref.info["exif"]

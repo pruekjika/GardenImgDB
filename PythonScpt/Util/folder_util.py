@@ -96,9 +96,10 @@ def get_filename_only(path):
     return Path(path).stem
 
 
-def find_and_delete_jpg_in_folder(path):
+def find_and_delete_jpg_in_folder(path, do_log=False):
     img_path = find_first_jpg_file(path)
     if img_path is None:
         return
     Path(img_path).unlink()
-    logger.info(f"remove {img_path}!")
+    if do_log:
+        logger.info(f"remove {img_path}!")
