@@ -1,7 +1,8 @@
+from pathlib import Path
 from Util.folder_util import (
     count_image_file,
     get_relative_path as gp,
-    move_first_jpg_image_to_new_path,
+    move_first_match_image_to_new_path,
 )
 
 img_fixed_path = r"ImageDB\Fixed"
@@ -18,8 +19,12 @@ KEYPOINT = 200000
 
 
 def main():
-    move_first_jpg_image_to_new_path(
-        gp(img_small), gp(img_original_path), str(img_original_count + 1)
+    move_first_match_image_to_new_path(
+        gp(img_small), gp(img_original_path), str(img_original_count + 1), "*.jpg"
+    )
+
+    move_first_match_image_to_new_path(
+        gp(Path.cwd()), gp(img_to_fixed), str(img_already_fixed_count + 1), "*.webp"
     )
 
 

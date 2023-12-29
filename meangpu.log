@@ -70,3 +70,11 @@
 30-Dec-2023 04:47:04 remove D:\Github\GardenImgDB\__72.jpg!
 30-Dec-2023 04:47:04 ref:'__72' fix:'73' key:13000 fac:0.01
 30-Dec-2023 04:47:08 [D:\Github\GardenImgDB\__73.jpg] created!
+30-Dec-2023 05:13:32 ref:'__77' fix:'78test' key:13000 fac:0.01
+30-Dec-2023 05:13:36 [D:\Github\GardenImgDB\__78test.jpg] created!
+30-Dec-2023 05:20:31 move'D:\Github\GardenImgDB\NowImage-Resized\78test (2).jpg to D:\Github\GardenImgDB\ImageDB\Original\78.jpg'
+30-Dec-2023 05:20:31 No *.webp found in D:\Github\GardenImgDB!!!
+30-Dec-2023 05:20:59 No *.jpg found in D:\Github\GardenImgDB\NowImage-Resized!!!
+30-Dec-2023 05:20:59 move'D:\Github\GardenImgDB\__78test.webp to D:\Github\GardenImgDB\NowImage-ToMatch-BIG\79.jpg'
+30-Dec-2023 05:21:16 No *.jpg found in D:\Github\GardenImgDB\NowImage-Resized!!!
+30-Dec-2023 05:21:16 No *.webp found in D:\Github\GardenImgDB!!!

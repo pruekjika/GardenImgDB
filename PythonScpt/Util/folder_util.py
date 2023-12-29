@@ -86,12 +86,13 @@ def find_to_fixed_img(directory):
     return None
 
 
-def move_first_jpg_image_to_new_path(old_folder_path, new_path, new_name):
-    if find_first_jpg_file(old_folder_path) is None:
-        logger.error(f"No jpg found in {old_folder_path}!!!")
+def move_first_match_image_to_new_path(old_folder_path, new_path, new_name, extension):
+    target = find_first_file_of_extension(old_folder_path, extension)
+    if target is None:
+        logger.error(f"No {extension} found in {old_folder_path}!!!")
         return
 
-    move_and_rename(find_first_jpg_file(old_folder_path), new_path, new_name)
+    move_and_rename(target, new_path, new_name)
 
 
 def get_filename_only(path):
