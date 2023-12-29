@@ -1,5 +1,5 @@
 from PIL import Image
-from PythonScpt.Util.me_logger import logger
+from Util.me_logger import logger
 
 
 def copy_metadata_from_to(from_path, to_path, new_path=None):

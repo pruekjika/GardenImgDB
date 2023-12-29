@@ -1,5 +1,5 @@
-from PythonScpt.Util.me_logger import logger
-from PythonScpt.Util.folder_util import create_folder, get_joined_path, join_folder_path
+from Util.me_logger import logger
+from Util.folder_util import create_folder, get_joined_path, join_folder_path
 from img_metadata import copy_metadata_from_to
 import cv2
 import numpy as np
@@ -49,7 +49,7 @@ def create_fix_image(
     """
 
     def read_img(img_name):
-        return cv2.imread(img_name + file_extension)
+        return cv2.imread(img_name)
 
     def img_to_grey(img):
         if img is None:
@@ -122,7 +122,7 @@ def create_fix_image(
     new_fix_img_path = write_fixed_img(img_b_fixed)
     print(f"bad_img_path: {bad_img_path}, new_img_path:{new_fix_img_path}")
 
-    copy_metadata_from_to(bad_img_path + file_extension, new_fix_img_path)
+    copy_metadata_from_to(bad_img_path, new_fix_img_path)
 
     if debug:
         debug_show_img(img_b_g, kp_b, img_r_g, kp_r, img_b_fixed)

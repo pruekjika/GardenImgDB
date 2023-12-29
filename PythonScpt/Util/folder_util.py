@@ -67,10 +67,18 @@ def find_first_jpg_file(directory):
     return None
 
 
-def find_first_jpg_with_prefix(directory):
+def find_ref_img(directory):
     jpg_files = Path(directory).glob("*.jpg")
     for file in jpg_files:
         if file.name.startswith("__"):
+            return str(file.absolute())
+    return None
+
+
+def find_to_fixed_img(directory):
+    jpg_files = Path(directory).glob("*.jpg")
+    for file in jpg_files:
+        if not file.name.startswith("__"):
             return str(file.absolute())
     return None
 

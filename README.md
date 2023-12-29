@@ -1,5 +1,11 @@
 # GardenImgDB
 
+package
+
+```cmd
+pip install opencv-python
+```
+
 กระบวนการทำคือ
 
 1. upload `raw_image` ภาพใหญ่ลง database onedrive https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0BiVKuBZ6za8otb0-ZGZnnuA?e=JiDEBm
