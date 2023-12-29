@@ -27,5 +27,5 @@ pip install opencv-python
    3. ถ้าไฟล์ภาพทำได้ไม่มีปัญหา ให้เราทำการ
       1. ใช้ `file converter` convert ออกมา 2 ไฟล์เป็น
          1. downscale.jpg // อันนี้ไม่ใช่อันของ fixed นะ เป็นอัน original.jpg ก่อน fix => `NowImage-Resized`
-         2. downscale-just-fixed-img.webp => `NowFixedWebp`
+         2. downscale-just-fixed-img.webp => `NowFixedWebp` ปล่อยมันอยู่ด้านนอกเลย ไม่ต้องย้ายเข้า folder
    4. ไปที่ `img_mover.py` ละ run file เพื่อ auto move file

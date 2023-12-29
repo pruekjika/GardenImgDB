@@ -92,7 +92,7 @@ def move_first_match_image_to_new_path(old_folder_path, new_path, new_name, exte
         logger.error(f"No {extension} found in {old_folder_path}!!!")
         return
 
-    move_and_rename(target, new_path, new_name)
+    move_and_rename(target, new_path, new_name, extension[1:])
 
 
 def get_filename_only(path):

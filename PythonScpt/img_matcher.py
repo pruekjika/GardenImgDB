@@ -85,7 +85,7 @@ def create_fix_image(
         return final_bad_path_name
 
     logger.info(
-        f"ref:'{ref_img_name}' fix:'{bad_img_name}' key:{keypoint} fac:{good_factor}"
+        f"fixing: ref: '{ref_img_name}' fix: '{bad_img_name}' key: '{keypoint}' fac: '{good_factor}'"
     )
 
     bad_img_path, ref_img_path = get_joined_path(

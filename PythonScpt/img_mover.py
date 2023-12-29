@@ -23,8 +23,12 @@ def main():
         gp(img_small), gp(img_original_path), str(img_original_count + 1), "*.jpg"
     )
 
+    # no need +1 cause have __0.webp
     move_first_match_image_to_new_path(
-        gp(Path.cwd()), gp(img_to_fixed), str(img_already_fixed_count + 1), "*.webp"
+        gp(Path.cwd()),
+        gp(img_fixed_path),
+        f"__{str(img_already_fixed_count)}",
+        "*.webp",
     )
 
 
