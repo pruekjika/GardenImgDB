@@ -1,10 +1,11 @@
-from .LoopCall.img_matcher_call_loop import *
-from .img_class import *
-from .img_setting import *
-from .img_mover import *
+from .img_setting import SettingManager
+import os
 
 
 def main():
+    test_path = r"C:\Users\meang\Desktop\TestData"
+    work_path = r"C:\Users\meang\Desktop\GardenMap-database"
+
     def move_img():
         path_move_to = ["", "Zoom-1-Top", "Zoom-2-Middle", "Zoom-3-Bottom"]
         sk_path_list = get_sk_img_files_list()
@@ -18,9 +19,6 @@ def main():
         SettingManager.update_setting_target_array_to_jpg_count()
 
         setting_list = SettingManager.load_setting()
-
-        for setting in setting_list:
-            call_array_img(setting)
 
     def fix_image():
         SettingManager.change_to_real_work()

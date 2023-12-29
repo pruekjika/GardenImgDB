@@ -1,5 +1,5 @@
 from PIL import Image
-from log_setup import logger
+from Python.Util.log_setup import logger
 
 
 def copy_metadata_from_to(from_path, to_path, new_path=None):
@@ -19,7 +19,6 @@ def copy_metadata_from_to(from_path, to_path, new_path=None):
 
     image_ref = Image.open(from_path)
     exif = image_ref.info["exif"]
-
     image_new = Image.open(to_path)
 
     save_img(image_new, to_path) if new_path is None else save_img(image_new, new_path)
@@ -28,12 +27,7 @@ def copy_metadata_from_to(from_path, to_path, new_path=None):
 def main():
     f_path_1 = r"C:\Users\meang\Desktop\TestData\9.JPG"
     f_path_2 = r"C:\Users\meang\Desktop\TestData\8.JPG"
-
-    f_path_3 = "./ExampleImg/wa.jpg"
-    f_path_4 = "./ExampleImg/wa2.jpg"
-    f_path_5 = "./ExampleImg/wa3.jpg"
-    # copy_metadata_from_to(f_path_1, f_path_4, f_path_5)
-    copy_metadata_from_to(f_path_1, f_path_4)
+    copy_metadata_from_to(f_path_1, f_path_2)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 import logging
 import sys
 
-log_path = r"meangpu.log"
+log_path = r"./meangpu.log"
 
 # Create and configure logger
 # format='- %(levelName)s %(asctime)s %(message)s'

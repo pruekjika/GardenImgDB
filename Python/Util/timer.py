@@ -3,7 +3,7 @@
 import atexit
 from time import time, strftime, localtime
 from datetime import timedelta
-from log_setup import logger
+from Python.Util.log_setup import logger
 
 
 def secondsToStr(elapsed=None):

@@ -1,24 +1,20 @@
-from log_setup import logger
-from folder_util import create_folder, get_joined_path, join_folder_path
+from Python.Util.log_setup import logger
+from Python.Util.folder_util import create_folder, get_joined_path, join_folder_path
 from img_metadata import copy_metadata_from_to
 import cv2
 import numpy as np
 
 
-def debug_show_img(
-    _img_b_g, _kp_b, _img_r_g, _kp_r, _matches, _img_b_fixed, _showmatch_num=100
-):
+def debug_show_img(_img_b_g, _kp_b, _img_r_g, _kp_r, _matches, _showmatch_num=100):
     def show_small_img(window_name, img_src):
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         img_small = cv2.resize(img_src, (960, 540))
         cv2.imshow(window_name, img_small)
 
-    # im_pil = Image.fromarray(img2)
-    # im_pil.show()
-
     print("Showing debug img....")
-    img_bad_final = cv2.drawKeypoints(_img_b_g, _kp_b, None, flags=None)
-    img_ref_final = cv2.drawKeypoints(_img_r_g, _kp_r, None, flags=None)
+    # img_bad_final = cv2.drawKeypoints(_img_b_g, _kp_b, None, flags=None)
+    # img_ref_final = cv2.drawKeypoints(_img_r_g, _kp_r, None, flags=None)
+
     img_match = cv2.drawMatches(
         _img_b_g, _kp_b, _img_r_g, _kp_r, _matches[:_showmatch_num], None
     )
@@ -38,9 +34,9 @@ def create_fix_image(
     bad_img_name: str,
     folder_in_path: str,
     folder_out_path: str,
-    good_factor=0.1,
+    good_factor=0.01,
     file_extension=".jpg",
-    keypoint=1150,
+    keypoint=16000,
     debug=False,
 ):
     """
@@ -73,14 +69,14 @@ def create_fix_image(
 
     def select_top_value(_matches, _good_factor):
         # this mean it will select only top 0.1 percent
-        numGoodMatchs = int(len(_matches) * _good_factor)
-        return _matches[:numGoodMatchs]
+        numGoodMatch = int(len(_matches) * _good_factor)
+        return _matches[:numGoodMatch]
 
     def print_after_write_img(_fixed_name):
         logger.info(f"[[{_fixed_name}]] created!")
 
-    def write_fixed_img(fixed_img, leadword="__"):
-        output_img_name = f"{leadword}{bad_img_name}{file_extension}"  # __w3.jpg
+    def write_fixed_img(fixed_img, leadWord="__"):
+        output_img_name = f"{leadWord}{bad_img_name}{file_extension}"  # __w3.jpg
         create_folder(folder_out_path)
 
         final_bad_path_name = join_folder_path(folder_out_path, output_img_name)
@@ -124,12 +120,12 @@ def create_fix_image(
     img_b_fixed = cv2.warpPerspective(img_b, homo, (ref_width, ref_height))
 
     new_fix_img_path = write_fixed_img(img_b_fixed)
-    # print(f"badimgpath: {bad_img_path+file_extension}, newingpath:{new_fix_img_path}")
+    print(f"bad_img_path: {bad_img_path}, new_img_path:{new_fix_img_path}")
 
     copy_metadata_from_to(bad_img_path + file_extension, new_fix_img_path)
 
     if debug:
-        debug_show_img(img_b_g, kp_b, img_r_g, kp_r, matches, img_b_fixed)
+        debug_show_img(img_b_g, kp_b, img_r_g, kp_r, img_b_fixed)
 
 
 def main():
