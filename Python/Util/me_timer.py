@@ -3,7 +3,7 @@
 import atexit
 from time import time, strftime, localtime
 from datetime import timedelta
-from Python.Util.log_setup import logger
+from Python.Util.me_logger import logger
 
 
 def secondsToStr(elapsed=None):
@@ -24,9 +24,7 @@ def log(s, elapsed=None):
 
 
 def end_log():
-    end = time()
-    elapsed = end - start
-    log("End Program", secondsToStr(elapsed))
+    log("End Program")
 
 
 start = time()

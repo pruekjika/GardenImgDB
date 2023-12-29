@@ -1,4 +1,3 @@
-from .img_setting import SettingManager
 import os
 
 
@@ -47,9 +46,6 @@ def main():
             call_array_img(setting)
 
     fix_image()
-    # main_process()
-    # external_process()
-    # external_process_fix()
 
 
 if __name__ == "__main__":

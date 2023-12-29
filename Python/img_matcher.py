@@ -1,4 +1,4 @@
-from Python.Util.log_setup import logger
+from Python.Util.me_logger import logger
 from Python.Util.folder_util import create_folder, get_joined_path, join_folder_path
 from img_metadata import copy_metadata_from_to
 import cv2
