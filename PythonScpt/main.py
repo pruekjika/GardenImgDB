@@ -13,8 +13,7 @@ from pathlib import Path
 img_fixed_path = r"ImageDB\Fixed"
 img_original_path = r"ImageDB\Original"
 
-img_small = r"NowImage-Resized"
-img_to_fixed = r"NowImage-ToMatch-BIG"
+img_to_fixed = r"P-FixingImg-big"
 
 img_already_fixed_count = count_image_file(gp(img_fixed_path), "*.webp")
 img_original_count = count_image_file(gp(img_original_path), "*.jpg")
