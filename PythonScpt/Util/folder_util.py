@@ -90,3 +90,15 @@ def move_first_jpg_image_to_new_path(old_folder_path, new_path, new_name):
         return
 
     move_and_rename(find_first_jpg_file(old_folder_path), new_path, new_name)
+
+
+def get_filename_only(path):
+    return Path(path).stem
+
+
+def find_and_delete_jpg_in_folder(path):
+    img_path = find_first_jpg_file(path)
+    if img_path is None:
+        return
+    Path(img_path).unlink()
+    logger.info(f"remove {img_path}!")
