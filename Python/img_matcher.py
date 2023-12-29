@@ -1,23 +1,8 @@
 from log_setup import logger
-from img_metadata import *
+from folder_util import create_folder, get_joined_path, join_folder_path
+from img_metadata import copy_metadata_from_to
 import cv2
 import numpy as np
-from pathlib import Path
-import os
-
-
-def create_folder(folder_in_path):
-    Path(folder_in_path).mkdir(parents=True, exist_ok=True)
-
-
-def join_folder_path(_path, _filename):
-    return os.path.join(_path, _filename)
-
-
-def get_joined_path(_path, _bad, _ref):
-    _final_bad = join_folder_path(_path, _bad)
-    _final_ref = join_folder_path(_path, _ref)
-    return _final_bad, _final_ref
 
 
 def debug_show_img(

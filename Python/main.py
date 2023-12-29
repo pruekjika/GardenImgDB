@@ -1,7 +1,7 @@
-from img_matcher_call_loop import *
-from img_class import *
-from img_setting import *
-from img_mover import *
+from .LoopCall.img_matcher_call_loop import *
+from .img_class import *
+from .img_setting import *
+from .img_mover import *
 
 
 def main():

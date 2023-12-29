@@ -8,35 +8,5 @@
     "good_factor": 0.01,
     "debug": false,
     "target_array": 72
-  },
-  {
-    "ref_name": "__49",
-    "bad_name": "",
-    "folder_in_src": "Zoom-1-Top",
-    "folder_out_src": "FixImg\\1-Top-fix",
-    "orb_keypoint": 16000,
-    "good_factor": 0.01,
-    "debug": false,
-    "target_array": 72
-  },
-  {
-    "ref_name": "__52",
-    "bad_name": "",
-    "folder_in_src": "Zoom-2-Middle",
-    "folder_out_src": "FixImg\\2-Middle-fix",
-    "orb_keypoint": 16000,
-    "good_factor": 0.01,
-    "debug": false,
-    "target_array": 72
-  },
-  {
-    "ref_name": "__38",
-    "bad_name": "",
-    "folder_in_src": "Zoom-3-Bottom",
-    "folder_out_src": "FixImg\\3-Bottom-fix",
-    "orb_keypoint": 16000,
-    "good_factor": 0.01,
-    "debug": false,
-    "target_array": 72
   }
 ]
