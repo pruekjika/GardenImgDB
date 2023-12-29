@@ -73,7 +73,7 @@ def create_fix_image(
         return _matches[:numGoodMatch]
 
     def print_after_write_img(_fixed_name):
-        logger.info(f"[[{_fixed_name}]] created!")
+        logger.info(f"[{_fixed_name}] created!")
 
     def write_fixed_img(fixed_img, leadWord="__"):
         output_img_name = f"{leadWord}{bad_img_name}{file_extension}"  # __w3.jpg
@@ -83,6 +83,10 @@ def create_fix_image(
         cv2.imwrite(final_bad_path_name, fixed_img)
         print_after_write_img(final_bad_path_name)
         return final_bad_path_name
+
+    logger.info(
+        f"ref:{ref_img_name}, fix:{bad_img_name} key:{keypoint} factor:{good_factor}"
+    )
 
     bad_img_path, ref_img_path = get_joined_path(
         folder_in_path, bad_img_name, ref_img_name
