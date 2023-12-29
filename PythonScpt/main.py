@@ -31,6 +31,7 @@ DELETE_OLD_IMG = True
 def main():
     ref = find_ref_img(gp(img_to_fixed))
     to_fix = find_to_fixed_img(gp(img_to_fixed))
+
     if ref is None or to_fix is None:
         logger.error(f"ref:{ref} / to_fix:{to_fix} one of this is NONE")
         return

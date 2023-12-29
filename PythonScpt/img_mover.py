@@ -1,7 +1,6 @@
 from Util.folder_util import (
     count_image_file,
     get_relative_path as gp,
-    get_filename_only as gn,
     move_first_jpg_image_to_new_path,
 )
 

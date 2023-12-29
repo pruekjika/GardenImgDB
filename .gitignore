@@ -1,2 +1,10 @@
-
 *.pyc
+
+*.jpg
+*.webp
+
+!imageDB/*.jpg
+!imageDB/*.webp
+
+!imageDB/Original/*.jpg
+!imageDB/Fixed/*.webp

@@ -54,17 +54,20 @@ def move_and_rename(old_path, new_path, new_name, extension=".jpg"):
     logger.info(f"move'{old_path} to {path_with_name}'")
 
 
-def find_first_jpg_file(directory):
+def find_first_file_of_extension(directory, extension):
     directory_path = Path(directory)
-
-    # Find all files with the .jpg extension in the directory
-    jpg_files = directory_path.glob("*.jpg")
-
-    # Return the path of the first jpg file found, or None if no file is found
+    jpg_files = directory_path.glob(extension)
     for file in jpg_files:
         return str(file.absolute())
-
     return None
+
+
+def find_first_jpg_file(directory):
+    return find_first_file_of_extension(directory, "*.jpg")
+
+
+def find_first_webp_file(directory):
+    return find_first_file_of_extension(directory, "*.jpg")
 
 
 def find_ref_img(directory):
@@ -84,7 +87,6 @@ def find_to_fixed_img(directory):
 
 
 def move_first_jpg_image_to_new_path(old_folder_path, new_path, new_name):
-    print(old_folder_path)
     if find_first_jpg_file(old_folder_path) is None:
         logger.error(f"No jpg found in {old_folder_path}!!!")
         return
