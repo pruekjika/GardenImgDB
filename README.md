@@ -30,3 +30,5 @@ pip install opencv-python
          1. downscale.jpg // อันนี้ไม่ใช่อันของ fixed นะ เป็นอัน original.jpg ก่อน fix => `P-Original-resized`
          2. downscale-just-fixed-img.webp => `NowFixedWebp` ปล่อยมันอยู่ด้านนอกเลย ไม่ต้องย้ายเข้า folder
    4. ไปที่ `img_mover.py` ละ run file เพื่อ auto move file
+
+Upload file ทีแก้แล้วกลับขึ้นไปใน onedrive
