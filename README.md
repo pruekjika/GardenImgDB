@@ -19,9 +19,10 @@ pip install opencv-python
 กระบวนการทำคือ
 
 1. upload `raw_image` ภาพใหญ่ลง database onedrive https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0BiVKuBZ6za8otb0-ZGZnnuA?e=JiDEBm
+
 2. นำภาพที่ทำให้เล็กลงแล้ว upload ลง github นี้ และ run python file ให้มันทำการสร้างภาพใหม่
    1. เช็คไฟล์ว่ามีไฟล์ 2 อย่างด้านล่างใน folder `P-FixingImg-big`
-      1. ไฟล์ภาพ `__ref` ที่มีอักษร `__` นำหน้า ควรใช้ `__77.jpg` เป็น ref เพราะจะได้เป็นกลาง
+      1. ไฟล์ภาพ `__ref` ที่มีอักษร `__` นำหน้า ควรใช้ `__77.jpg` เป็น ref เพราะจะได้เป็นกลาง (เลือก ref จาก https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh)
       2. ไฟล์ภาพ `ที่ต้องการจะแก้.jpg`
    2. run `main.py` เพื่อทำการ fix image
    3. ถ้าไฟล์ภาพทำได้ไม่มีปัญหา ให้เราทำการ

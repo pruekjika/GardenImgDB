@@ -96,3 +96,20 @@
 31-Dec-2023 20:53:43 [D:\Github\GardenImgDB\__DJI_0537.jpg] created!
 31-Dec-2023 20:54:22 No *.jpg found in D:\Github\GardenImgDB\P-Original-resized!!!
 31-Dec-2023 20:54:22 move'D:\Github\GardenImgDB\__DJI_0537.webp to D:\Github\GardenImgDB\ImageDB\Fixed\__79.webp'
+23-Apr-2024 20:22:25 fixing: ref: '__77' fix: '80' key: '23000' fac: '0.01'
+23-Apr-2024 20:22:28 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:24:54 ref:None / to_fix:D:\Github\GardenImgDB\P-FixingImg-big\80.jpg one of this is NONE
+23-Apr-2024 20:25:37 fixing: ref: '__78' fix: '80' key: '23000' fac: '0.01'
+23-Apr-2024 20:25:40 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:27:08 fixing: ref: '__78' fix: '80' key: '20000' fac: '0.01'
+23-Apr-2024 20:27:11 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:27:18 fixing: ref: '__78' fix: '80' key: '25000' fac: '0.01'
+23-Apr-2024 20:27:21 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:27:31 fixing: ref: '__78' fix: '80' key: '15000' fac: '0.01'
+23-Apr-2024 20:27:34 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:27:43 fixing: ref: '__78' fix: '80' key: '15000' fac: '0.05'
+23-Apr-2024 20:27:45 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:27:53 fixing: ref: '__78' fix: '80' key: '35000' fac: '0.03'
+23-Apr-2024 20:27:57 [D:\Github\GardenImgDB\__80.jpg] created!
+23-Apr-2024 20:29:06 fixing: ref: '__77' fix: '80 (2)' key: '35000' fac: '0.03'
+23-Apr-2024 20:29:10 [D:\Github\GardenImgDB\__80 (2).jpg] created!
