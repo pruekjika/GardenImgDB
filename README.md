@@ -12,9 +12,7 @@ so that final size = `4096x3072` = is divide by 2 from original
 
 package
 
-```cmd
-pip install opencv-python
-```
+- run `pipInstall.bat` once
 
 กระบวนการทำคือ
 
