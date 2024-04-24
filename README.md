@@ -8,9 +8,9 @@ what will store here will be
 all img is downscale by using `file converter` to `.jpg/.webp` setting with `clamp to lowest power of 2 size`
 so that final size = `4096x3072` = is divide by 2 from original
 
-======================================================================
+### website
+
 CompareWeb: [ImageCompare](https://pruekjika.github.io/GardenImgDB/)
-======================================================================
 
 ### python
 
