@@ -20,7 +20,7 @@ package
 
 กระบวนการทำคือ
 
-1. upload `raw_image` ภาพใหญ่ลง database onedrive https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0BiVKuBZ6za8otb0-ZGZnnuA?e=JiDEBm
+1. upload `raw_image` ภาพใหญ่ลง database onedrive https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0B04w2evmpz3C8jPsoT-KX2Q?e=jrJduX
 
 2. นำภาพที่ทำให้เล็กลงแล้ว upload ลง github นี้ และ run python file ให้มันทำการสร้างภาพใหม่
    1. เช็คไฟล์ว่ามีไฟล์ 2 อย่างด้านล่างใน folder `P-FixingImg-big`
