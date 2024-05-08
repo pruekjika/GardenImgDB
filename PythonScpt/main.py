@@ -21,7 +21,7 @@ img_original_count = count_image_file(gp(img_original_path), "*.jpg")
 ###############################################################################
 # change below
 ALLOW_PERCENT = 0.01
-KEYPOINT = 28000
+KEYPOINT = 19400
 DELETE_OLD_IMG = True
 # end need to change
 ###############################################################################
