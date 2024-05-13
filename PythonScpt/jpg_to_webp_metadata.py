@@ -1,7 +1,6 @@
 import subprocess
 import os
 
-
 jpg_folder_file_path = r"C:\Users\meang\Documents\Github\GardenImgDB\ImageDB\Original"
 webp_folder_file_path = r"C:\Users\meang\Documents\Github\GardenImgDB\ImageDB\Fixed"
 
@@ -21,3 +20,9 @@ for file_name in files:
         )
 
         print(f"do copy {file_name} metadata to {webp_file_path}")
+
+
+def one_line_command():
+    data_path = r"C:\Users\meang\Documents\Github\GardenImgDB\ImageDB\Fixed\0.jpg"
+    target_path = r"C:\Users\meang\Documents\Github\GardenImgDB\ImageDB\Fixed\__0.webp"
+    subprocess.run(["exiftool", "-TagsFromFile", data_path, "-all:all", target_path])
