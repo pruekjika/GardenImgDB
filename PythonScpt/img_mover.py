@@ -14,10 +14,8 @@ img_to_fixed = r"P-FixingImg-big"
 img_already_fixed_count = count_image_file(gp(img_fixed_path), "*.webp")
 img_original_count = count_image_file(gp(img_original_path), "*.jpg")
 
-ALLOW_PERCENT = 0.001
-KEYPOINT = 200000
 
-
+#  new workflow not use anymore
 def main():
     move_first_match_image_to_new_path(
         gp(img_small), gp(img_original_path), str(img_original_count + 1), "*.jpg"
