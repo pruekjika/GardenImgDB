@@ -7,11 +7,11 @@ what will store here will be
 all img is downscale by using `file converter` to `.jpg/.webp` setting with `clamp to lowest power of 2 size`
 so that final size = `4096x3072` = is divide by 2 from original
 
-### website
+## website
 
 CompareWeb: [ImageCompare](https://pruekjika.github.io/GardenImgDB/)
 
-### ที่ต้องทำ
+## ที่ต้องทำ
 
 1. upload `raw_image` ภาพใหญ่ลง database onedrive https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0B2D0Oh5VBAn5-VcLupwrMyw?e=L6f01H
 2. แก้ภาพให้ตรงกันโดย นำ `__ref` และ `ที่ต้องการจะแก้.jpg` ไปไว้ใน `P-FixingImg-big` (เลือก ref จาก https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh)
