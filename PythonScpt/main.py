@@ -15,6 +15,7 @@ img_original_path = r"ImageDB\Original"
 
 img_to_fixed = r"P-FixingImg-big"
 
+# todo  make it work with .webp
 img_already_fixed_count = count_image_file(gp(img_fixed_path), "*.webp")
 img_original_count = count_image_file(gp(img_original_path), "*.jpg")
 
