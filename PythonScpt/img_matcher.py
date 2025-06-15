@@ -38,6 +38,7 @@ def create_fix_image(
     file_extension=".jpg",
     keypoint=16000,
     debug=False,
+    leadWord="__",
 ):
     """
     Keyword arguments:
@@ -75,7 +76,7 @@ def create_fix_image(
     def print_after_write_img(_fixed_name):
         logger.info(f"[{_fixed_name}] created!")
 
-    def write_fixed_img(fixed_img, leadWord="__"):
+    def write_fixed_img(fixed_img):
         output_img_name = f"{leadWord}{bad_img_name}{file_extension}"  # __w3.jpg
         create_folder(folder_out_path)
 

@@ -21,8 +21,8 @@ img_original_count = count_image_file(gp(img_original_path), "*.jpg")
 
 ###############################################################################
 # change below
-ALLOW_PERCENT = 0.01
-KEYPOINT = 25500
+ALLOW_PERCENT = 0.005
+BASE_KEYPOINT = 15000
 DELETE_OLD_IMG = True
 # end need to change
 ###############################################################################
@@ -39,14 +39,20 @@ def main():
     if DELETE_OLD_IMG:
         do_del(Path.cwd())
 
-    create_fix_image(
-        gn(ref),
-        gn(to_fix),
-        gp(img_to_fixed),
-        gp(Path.cwd()),
-        ALLOW_PERCENT,
-        keypoint=KEYPOINT,
-    )
+    # Loop through different keypoint values: 20000, 20100, 20200, etc.
+    for i in range(10):  # Creates 5 different outputs
+        keypoint_value = BASE_KEYPOINT + (i * 100)
+        output_prefix = f"__{keypoint_value}_"
+
+        create_fix_image(
+            gn(ref),
+            gn(to_fix),
+            gp(img_to_fixed),
+            gp(Path.cwd()),
+            ALLOW_PERCENT,
+            keypoint=keypoint_value,
+            leadWord=output_prefix,
+        )
 
 
 if __name__ == "__main__":
