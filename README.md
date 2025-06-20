@@ -13,7 +13,8 @@ CompareWeb: [ImageCompare](https://pruekjika.github.io/GardenImgDB/)
 
 ## ที่ต้องทำ
 
-1. upload `raw_image` ภาพใหญ่ลง database onedrive https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EqQLLNfFRGJFphdrPYlCaF0B2D0Oh5VBAn5-VcLupwrMyw?e=L6f01H กดเข้าได้ที่ https://www.microsoft365.com/onedrive/?from=PortalHome
+1. 2025-06-20 onedrive มหาลัยพังไปแล้วคือ ได้แค่ 5gb ซึ่งไม่พอเก็บภาพ ทำให้ข้ามขั้นตอนนี้ได้
+
 2. แก้ภาพให้ตรงกันโดย นำ `__ref` และ `ที่ต้องการจะแก้.jpg` ไปไว้ใน `P-FixingImg-big` (เลือก ref จาก https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh)
 3. run `main.py` เพื่อทำการ fix image
 4. ถ้าไฟล์ภาพทำได้ไม่มีปัญหา ให้เราใช้ file converter แปลงมันให้เป็น .webp
