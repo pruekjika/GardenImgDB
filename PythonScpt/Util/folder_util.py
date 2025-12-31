@@ -71,18 +71,22 @@ def find_first_webp_file(directory):
 
 
 def find_ref_img(directory):
-    jpg_files = Path(directory).glob("*.jpg")
-    for file in jpg_files:
-        if file.name.startswith("__"):
-            return str(file.absolute())
+    # Try .jpg first, then .webp
+    for ext in ["*.jpg", "*.webp"]:
+        files = Path(directory).glob(ext)
+        for file in files:
+            if file.name.startswith("__"):
+                return str(file.absolute())
     return None
 
 
 def find_to_fixed_img(directory):
-    jpg_files = Path(directory).glob("*.jpg")
-    for file in jpg_files:
-        if not file.name.startswith("__"):
-            return str(file.absolute())
+    # Try .jpg first, then .webp
+    for ext in ["*.jpg", "*.webp"]:
+        files = Path(directory).glob(ext)
+        for file in files:
+            if not file.name.startswith("__"):
+                return str(file.absolute())
     return None
 
 

@@ -15,14 +15,15 @@ img_original_path = r"ImageDB\Original"
 
 img_to_fixed = r"P-FixingImg-big"
 
-# todo  make it work with .webp
 img_already_fixed_count = count_image_file(gp(img_fixed_path), "*.webp")
-img_original_count = count_image_file(gp(img_original_path), "*.jpg")
+img_original_count = count_image_file(
+    gp(img_original_path), "*.jpg"
+) + count_image_file(gp(img_original_path), "*.webp")
 
 ###############################################################################
 # change below
 ALLOW_PERCENT = 0.005
-BASE_KEYPOINT = 15000
+BASE_KEYPOINT = 18000
 DELETE_OLD_IMG = True
 # end need to change
 ###############################################################################

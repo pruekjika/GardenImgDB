@@ -3,6 +3,7 @@ from Util.folder_util import create_folder, get_joined_path, join_folder_path
 from img_metadata import copy_metadata_from_to
 import cv2
 import numpy as np
+import os
 
 
 def debug_show_img(_img_b_g, _kp_b, _img_r_g, _kp_r, _matches, _showmatch_num=100):
@@ -50,7 +51,16 @@ def create_fix_image(
     """
 
     def read_img(img_name):
-        return cv2.imread(img_name + file_extension)
+        # Try .jpg first, then .webp
+        for ext in [".jpg", ".webp"]:
+            img_path = img_name + ext
+            if os.path.exists(img_path):
+                img = cv2.imread(img_path)
+                if img is not None:
+                    return img, ext
+        # If neither exists or can't be read, try with default extension
+        img = cv2.imread(img_name + file_extension)
+        return img, file_extension
 
     def img_to_grey(img):
         if img is None:
@@ -94,8 +104,8 @@ def create_fix_image(
     )
     # read and convert img
     print(f"bad:{bad_img_path} | ref:{ref_img_path}")
-    img_b = read_img(bad_img_path)
-    img_r = read_img(ref_img_path)
+    img_b, bad_ext = read_img(bad_img_path)
+    img_r, ref_ext = read_img(ref_img_path)
 
     img_b_g = img_to_grey(img_b)
     img_r_g = img_to_grey(img_r)
@@ -127,7 +137,7 @@ def create_fix_image(
     new_fix_img_path = write_fixed_img(img_b_fixed)
     print(f"bad_img_path: {bad_img_path}, new_img_path:{new_fix_img_path}")
 
-    copy_metadata_from_to(bad_img_path + file_extension, new_fix_img_path)
+    copy_metadata_from_to(bad_img_path + bad_ext, new_fix_img_path)
 
     if debug:
         debug_show_img(img_b_g, kp_b, img_r_g, kp_r, img_b_fixed)
