@@ -1,30 +1,22 @@
 from Util.me_logger import logger
 from Util.folder_util import (
-    count_image_file,
     get_relative_path as gp,
     find_ref_img,
     find_to_fixed_img,
-    get_filename_only as gn,
-    find_and_delete_jpg_in_folder as do_del,
 )
-from img_matcher import create_fix_image
+from img_matcher import create_fix_image, MatchConfig
 from pathlib import Path
-
-img_fixed_path = r"ImageDB\Fixed"
-img_original_path = r"ImageDB\Original"
 
 img_to_fixed = r"P-FixingImg-big"
 
-img_already_fixed_count = count_image_file(gp(img_fixed_path), "*.webp")
-img_original_count = count_image_file(
-    gp(img_original_path), "*.jpg"
-) + count_image_file(gp(img_original_path), "*.webp")
-
 ###############################################################################
 # change below
-ALLOW_PERCENT = 0.005
-BASE_KEYPOINT = 18000
-DELETE_OLD_IMG = True
+DELETE_OLD_IMG = True  # delete previous "__*.jpg" outputs in the working folder
+CONFIG = MatchConfig(
+    work_width=1600,  # matching resolution; raise (e.g. 2400) if result is slightly off
+    search_radius=0.15,  # how far (fraction of width) framing may differ between shots
+    ecc_full_width=3200,  # extra fine pass at this width; 0 = skip (faster)
+)
 # end need to change
 ###############################################################################
 
@@ -37,23 +29,21 @@ def main():
         logger.error(f"ref:{ref} / to_fix:{to_fix} one of this is NONE")
         return
 
+    out_dir = Path.cwd()
     if DELETE_OLD_IMG:
-        do_del(Path.cwd())
+        for old in out_dir.glob("__*.jpg"):
+            old.unlink()
 
-    # Loop through different keypoint values: 20000, 20100, 20200, etc.
-    for i in range(10):  # Creates 5 different outputs
-        keypoint_value = BASE_KEYPOINT + (i * 100)
-        output_prefix = f"__{keypoint_value}_"
+    try:
+        result = create_fix_image(ref, to_fix, out_dir, CONFIG)
+    except RuntimeError as e:
+        logger.error(str(e))
+        return
 
-        create_fix_image(
-            gn(ref),
-            gn(to_fix),
-            gp(img_to_fixed),
-            gp(Path.cwd()),
-            ALLOW_PERCENT,
-            keypoint=keypoint_value,
-            leadWord=output_prefix,
-        )
+    logger.info(
+        f"done: stage={result.stage} score={result.score:.4f} - open the _check.jpg to verify. "
+        "If it is off, run: python PythonScpt/manual_match.py"
+    )
 
 
 if __name__ == "__main__":
