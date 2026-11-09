@@ -14,14 +14,20 @@ CompareWeb: [ImageCompare](https://pruekjika.github.io/WebImageCompare/)
 The site reads the photo list and dates from `ImageDB/index.json`, not the GitHub API.
 Rebuild it by hand with `python PythonScpt/Util/image_index.py ImageDB`.
 
-## ที่ต้องทำ
+## เพิ่มภาพใหม่ 1 ภาพ (ทำทุกครั้งที่ถ่ายภาพใหม่)
 
-1. 2025-06-20 onedrive มหาลัยพังไปแล้วคือ ได้แค่ 5gb ซึ่งไม่พอเก็บภาพ ทำให้ข้ามขั้นตอนนี้ได้ เอาไปไว้ใน google drive นี้แทน https://drive.google.com/drive/folders/1TMBsS2RonKXjFwxCICXABQEelqACY30W?usp=drive_link
+ภาพ original เต็มขนาดเก็บใน google drive (2025-06-20 onedrive มหาลัยเหลือแค่ 5gb ไม่พอ): <https://drive.google.com/drive/folders/1TMBsS2RonKXjFwxCICXABQEelqACY30W?usp=drive_link>
 
-2. แก้ภาพให้ตรงกันโดย นำ `__ref` และ `ที่ต้องการจะแก้.jpg` ไปไว้ใน `P-FixingImg-big` (เลือก ref จาก https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh)
-3. run `main.py` เพื่อทำการ fix image ได้ `ImageDB/<เลข>.webp` เลย (ชื่อภาพเป็นเลข เช่น `98.JPG` จะใช้เลขนั้น ถ้าไม่ใช่เลขจะใช้เลขถัดไป) และอัปเดต `ImageDB/index.json` ให้ด้วย ต้อง commit คู่กับ `.webp` เสมอ
-4. เปิด `__<ชื่อ>_check.jpg` เช็คว่าตรง (ซ้าย = ภาพซ้อน, ขวา = ตารางหมากรุก ถ้าเส้นถนน/ขอบบ่อขาดตอน แปลว่าไม่ตรง) ถ้าไม่ตรง run `python PythonScpt/manual_match.py` แล้วคลิกจุดคู่กัน
-5. Upload file `__.jpg` ทีแก้แล้วกลับขึ้นไปใน onedrive
+1. ใน `P-FixingImg-big/` ต้องมีแค่ ref 1 ไฟล์ (ชื่อขึ้นต้นด้วย `__` ตอนนี้คือ `__95.webp`) กับภาพใหม่ 1 ภาพ
+   - ย้ายภาพเก่าที่ทำเสร็จแล้วออกก่อน (เช่น `97.JPG`) ไม่งั้น `main.py` จะหยิบภาพเก่าแล้วหยุด เพราะ `ImageDB/97.webp` มีแล้ว
+   - ref เดิมเลือกจาก <https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh>
+2. วางภาพใหม่ใน `P-FixingImg-big/` ตั้งชื่อเป็นเลขถัดไป เช่น `98.JPG` (ถ้าไม่ใช่เลข จะได้เลขถัดไปให้เอง และเปลี่ยนชื่อไฟล์เป็นเลขนั้น)
+3. ดับเบิลคลิก `run_main.bat` (หรือ `python PythonScpt/main.py` จากโฟลเดอร์ repo)
+   ได้ `ImageDB/98.webp` (มีวันที่/GPS จากภาพเดิม) และ `ImageDB/index.json` อัปเดตให้ ถ้า error ดูใน `meangpu.log`
+4. เปิด `__98_check.jpg` ที่โฟลเดอร์ repo เช็คว่าตรง (ซ้าย = ภาพซ้อน, ขวา = ตารางหมากรุก ถ้าเส้นถนน/ขอบบ่อขาดตอน แปลว่าไม่ตรง)
+   ถ้าไม่ตรง run `python PythonScpt/manual_match.py` แล้วคลิกจุดคู่กัน
+5. commit `ImageDB/98.webp` คู่กับ `ImageDB/index.json` เสมอ แล้ว push เว็บจะเห็นภาพใหม่ภายใน ~5 นาที
+6. เอาภาพ original ไปเก็บใน google drive ด้านบน แล้วย้ายออกจาก `P-FixingImg-big/`
 
 ### ทำใหม่ทั้งหมดด้วย ref เดียว (`batch_align.py`)
 
