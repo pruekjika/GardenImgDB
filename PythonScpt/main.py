@@ -4,6 +4,7 @@ then save it as ImageDB/<number>.webp with the photo's metadata."""
 from pathlib import Path
 
 from Util.folder_util import db_path_for, find_image_to_fix, find_reference_image
+from Util.image_index import write_image_index
 from Util.me_logger import logger
 from img_matcher import MatchConfig, create_fix_image, save_with_metadata
 
@@ -42,6 +43,8 @@ def main():
         logger.error(str(error))
         return
     save_with_metadata(db_path, aligned, photo)
+    index_path, _ = write_image_index(db_path.parent)
+    logger.info(f"updated {index_path}")
     logger.info(
         f"done: {db_path} saved (stage={result.stage} score={result.score:.4f}). Open the _check.jpg to verify; "
         "if it is off, run: python PythonScpt/manual_match.py"

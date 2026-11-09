@@ -7,7 +7,8 @@ time neighbours and with the master, then all transforms are solved together
 rest are dropped. Each original is warped once into the master's frame.
 
 Input: originals named in time order (0.jpg, 1.jpg, ...) in --src.
-Output: aligned photos, check/ images, report.html (worst first), results.json.
+Output: aligned photos, check/ images, report.html (worst first), results.json,
+index.json (photo list + dates for the CompareWeb site).
 Reruns are fast: keypoints and pair matches are cached in <out>/.cache.
 
     python PythonScpt/batch_align.py --src P-Originals --ref 95 --out P-Aligned
@@ -26,6 +27,7 @@ import cv2
 import numpy as np
 
 import img_matcher as im
+from Util.image_index import write_image_index
 from Util.me_logger import logger
 
 IMAGE_SUFFIXES = (".jpg", ".jpeg", ".webp", ".png")
@@ -357,6 +359,7 @@ def main():
 
     results_file.write_text(json.dumps({row["photo"]: row for row in rows}, indent=1))
     write_report(out_dir, rows, master, warn_px=args.drop_px / 2)
+    write_image_index(out_dir)
     failed = [row["photo"] for row in rows if row["status"] != "ok"]
     logger.info(f"done. report: {out_dir / 'report.html'}" + (f"  FAILED: {failed}" if failed else ""))
 
