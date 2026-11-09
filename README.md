@@ -21,6 +21,17 @@ CompareWeb: [ImageCompare](https://pruekjika.github.io/GardenImgDB/)
 5. ย้าย .webp ไปไว้ใน folder `imageDB`
 6. Upload file `__.jpg` ทีแก้แล้วกลับขึ้นไปใน onedrive
 
+### ทำใหม่ทั้งหมดด้วย ref เดียว (`batch_align.py`)
+
+ใช้ตอนอยากให้ทุกภาพตรงกับ ref ตัวเดียว (แก้ปัญหา error สะสมจากการเปลี่ยน ref หลายรอบ)
+
+1. โหลดภาพ original เต็มขนาดทั้งหมดมาไว้ใน `P-Originals/` ตั้งชื่อตามลำดับ `0.jpg`, `1.jpg`, ... (ลำดับเวลาสำคัญ เพราะภาพจะถูกจับคู่กับภาพข้างเคียง)
+2. เลือกภาพ master 1 ภาพ (ฟ้าโปร่ง ไม่มีเงายาว ถ่ายตรงลงมา) แล้ว run
+   `python PythonScpt/batch_align.py --src P-Originals --ref 95 --out P-Aligned`
+   (ใส่ `--format webp` ถ้าอยากได้ .webp เลย)
+3. เปิด `P-Aligned/report.html` ภาพที่แย่สุดอยู่บนสุด แถวสีแดง = ควรเช็ค
+4. ภาพไหนเพี้ยน: `python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/95.jpg --out P-Aligned` คลิกจุดคู่กัน แล้ว run ข้อ 2 ซ้ำ (รอบหลังเร็ว เพราะมี cache)
+
 ### drone setting
 
 บินที่ความสูง 215 m จากพื้นดิน ขึ้นตรงโต๊ะไม้หนัก ด้านข้างศาลาแรกที่พ่อสร้าง

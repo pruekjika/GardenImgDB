@@ -1,131 +1,130 @@
-"""Manual fallback: click matching points in both photos, then warp.
+"""Align a photo by clicking matching points, for when automatic matching is off.
 
-Use when main.py's automatic match is off (check the __<name>_check.jpg).
+    python PythonScpt/manual_match.py                     photo + "__" ref from P-FixingImg-big
+    python PythonScpt/manual_match.py --points p.json     reuse saved points (add --edit to adjust)
+    python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/95.jpg --out P-Aligned
 
-    python PythonScpt/manual_match.py                 # pick points, then warp
-    python PythonScpt/manual_match.py --points p.json # reuse saved points
-    python PythonScpt/manual_match.py --no-refine     # skip ECC fine-tuning
-
-Two windows open: "BAD" (photo to fix) and "REF" (reference). Click a spot in
-BAD, then the same spot in REF; repeat for at least 4 pairs (6-10 spread over
-the whole image is better: road corners, building corners, pond tips).
-Windows can be resized/maximised for precision; a zoom box follows the cursor.
-
-Keys:  u = undo last point   r = reset all   Enter/Space = done   Esc/q = quit
-Points are saved to <out>/__<name>_points.json so you can tweak and rerun.
+Click a spot in PHOTO, then the same spot in REF; at least 4 pairs, 6-10 spread
+over the whole image is better (road, building and pond corners). A zoom box
+follows the cursor; windows can be maximised.
+Keys: u undo, r reset, Enter/Space done, q/Esc quit.
+Points are saved to <out>/__<photo>_points.json; batch_align.py picks them up.
 """
 
 import argparse
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import cv2
 import numpy as np
 
-from Util.me_logger import logger
-from Util.folder_util import find_ref_img, find_to_fixed_img
 import img_matcher as im
+from Util.folder_util import find_image_to_fix, find_reference_image
+from Util.me_logger import logger
 
 DISPLAY_WIDTH = 1800
-ZOOM_SRC = 60  # half-size (display px) of the area shown in the zoom box
-ZOOM_OUT = 240  # zoom box size (display px)
-COLORS = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255),
-          (255, 255, 0), (0, 128, 255), (255, 128, 0), (128, 0, 255), (0, 255, 128)]
+ZOOM_HALF_SIZE = 60
+ZOOM_BOX_SIZE = 240
+CLICK_TOLERANCE_PX = 40.0
+KEY_ENTER, KEY_RETURN, KEY_SPACE, KEY_ESC = 13, 10, 32, 27
+MARKER_COLORS = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 0, 255),
+                 (255, 255, 0), (0, 128, 255), (255, 128, 0), (128, 0, 255), (0, 255, 128)]
 
 
-class _Picker:
-    def __init__(self, img_bad, img_ref, pairs=None):
+@dataclass
+class View:
+    image: np.ndarray
+    scale: float
+    points: list = field(default_factory=list)
+    cursor: tuple = None
+
+
+class PointPicker:
+    def __init__(self, img_photo, img_ref, pairs=None):
         self.views = {}
-        for name, img in (("BAD", img_bad), ("REF", img_ref)):
-            s = DISPLAY_WIDTH / img.shape[1]
-            self.views[name] = {
-                "img": cv2.resize(img, None, fx=s, fy=s, interpolation=cv2.INTER_AREA),
-                "scale": s,
-                "pts": [],
-                "cursor": None,
-            }
-        for b, r in pairs or []:
-            self.views["BAD"]["pts"].append(tuple(b))
-            self.views["REF"]["pts"].append(tuple(r))
+        for name, img in (("PHOTO", img_photo), ("REF", img_ref)):
+            scale = DISPLAY_WIDTH / img.shape[1]
+            self.views[name] = View(cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA), scale)
+        for photo_point, ref_point in pairs or []:
+            self.views["PHOTO"].points.append(tuple(photo_point))
+            self.views["REF"].points.append(tuple(ref_point))
 
-    def expected(self):
-        """Which window the next click belongs to."""
-        nb, nr = len(self.views["BAD"]["pts"]), len(self.views["REF"]["pts"])
-        return "BAD" if nb == nr else "REF"
+    def next_window(self):
+        return "PHOTO" if len(self.views["PHOTO"].points) == len(self.views["REF"].points) else "REF"
 
-    def on_mouse(self, name):
-        def cb(event, x, y, flags, _):
-            v = self.views[name]
-            v["cursor"] = (x, y)
-            if event == cv2.EVENT_LBUTTONDOWN:
-                if name != self.expected():
-                    logger.info(f"click in {self.expected()} next")
-                    return
-                v["pts"].append((x / v["scale"], y / v["scale"]))  # store full-res
-        return cb
+    def mouse_handler(self, name):
+        def on_mouse(event, x, y, _flags, _param):
+            view = self.views[name]
+            view.cursor = (x, y)
+            if event != cv2.EVENT_LBUTTONDOWN:
+                return
+            if name != self.next_window():
+                logger.info(f"click in {self.next_window()} next")
+                return
+            view.points.append((x / view.scale, y / view.scale))
+        return on_mouse
 
     def undo(self):
-        b, r = self.views["BAD"]["pts"], self.views["REF"]["pts"]
-        if len(b) > len(r):
-            b.pop()
-        elif r:
-            r.pop()
+        photo_points, ref_points = self.views["PHOTO"].points, self.views["REF"].points
+        if len(photo_points) > len(ref_points):
+            photo_points.pop()
+        elif ref_points:
+            ref_points.pop()
 
     def reset(self):
-        for v in self.views.values():
-            v["pts"].clear()
+        for view in self.views.values():
+            view.points.clear()
 
     def pairs(self):
-        b, r = self.views["BAD"]["pts"], self.views["REF"]["pts"]
-        n = min(len(b), len(r))
-        return [(list(b[i]), list(r[i])) for i in range(n)]
+        return [[list(p), list(r)] for p, r in zip(self.views["PHOTO"].points, self.views["REF"].points)]
 
     def render(self, name):
-        v = self.views[name]
-        canvas = v["img"].copy()
-        for i, (x, y) in enumerate(v["pts"]):
-            p = (int(x * v["scale"]), int(y * v["scale"]))
-            c = COLORS[i % len(COLORS)]
-            cv2.drawMarker(canvas, p, c, cv2.MARKER_CROSS, 24, 2)
-            cv2.putText(canvas, str(i + 1), (p[0] + 8, p[1] - 8), 0, 0.8, c, 2)
-        msg = f"pairs: {len(self.pairs())}  next: {self.expected()}   u=undo r=reset Enter=done q=quit"
-        cv2.putText(canvas, msg, (10, 30), 0, 0.8, (0, 0, 0), 4)
-        cv2.putText(canvas, msg, (10, 30), 0, 0.8, (255, 255, 255), 2)
-        if v["cursor"]:
-            self._draw_zoom(canvas, v["img"], v["cursor"])
+        view = self.views[name]
+        canvas = view.image.copy()
+        for i, (x, y) in enumerate(view.points):
+            at = (int(x * view.scale), int(y * view.scale))
+            color = MARKER_COLORS[i % len(MARKER_COLORS)]
+            cv2.drawMarker(canvas, at, color, cv2.MARKER_CROSS, 24, 2)
+            cv2.putText(canvas, str(i + 1), (at[0] + 8, at[1] - 8), 0, 0.8, color, 2)
+        status = f"pairs: {len(self.pairs())}  next: {self.next_window()}   u=undo r=reset Enter=done q=quit"
+        cv2.putText(canvas, status, (10, 30), 0, 0.8, (0, 0, 0), 4)
+        cv2.putText(canvas, status, (10, 30), 0, 0.8, (255, 255, 255), 2)
+        if view.cursor:
+            draw_zoom_box(canvas, view.image, view.cursor)
         return canvas
 
-    @staticmethod
-    def _draw_zoom(canvas, src, cursor):
-        x, y = cursor
-        h, w = src.shape[:2]
-        x0, y0 = max(0, x - ZOOM_SRC), max(0, y - ZOOM_SRC)
-        x1, y1 = min(w, x + ZOOM_SRC), min(h, y + ZOOM_SRC)
-        if x1 <= x0 or y1 <= y0:
-            return
-        patch = cv2.resize(src[y0:y1, x0:x1], (ZOOM_OUT, ZOOM_OUT), interpolation=cv2.INTER_NEAREST)
-        c = ZOOM_OUT // 2
-        cv2.line(patch, (c, 0), (c, ZOOM_OUT), (0, 0, 255), 1)
-        cv2.line(patch, (0, c), (ZOOM_OUT, c), (0, 0, 255), 1)
-        # put zoom box in the corner away from the cursor
-        ox = w - ZOOM_OUT - 10 if x < w / 2 else 10
-        oy = h - ZOOM_OUT - 10 if y < h / 2 else 10
-        canvas[oy:oy + ZOOM_OUT, ox:ox + ZOOM_OUT] = patch
-        cv2.rectangle(canvas, (ox, oy), (ox + ZOOM_OUT, oy + ZOOM_OUT), (255, 255, 255), 2)
+
+def draw_zoom_box(canvas, image, cursor):
+    """Drawn in the corner opposite the cursor so it never hides the spot being clicked."""
+    x, y = cursor
+    h, w = image.shape[:2]
+    x0, y0 = max(0, x - ZOOM_HALF_SIZE), max(0, y - ZOOM_HALF_SIZE)
+    x1, y1 = min(w, x + ZOOM_HALF_SIZE), min(h, y + ZOOM_HALF_SIZE)
+    if x1 <= x0 or y1 <= y0:
+        return
+    zoomed = cv2.resize(image[y0:y1, x0:x1], (ZOOM_BOX_SIZE, ZOOM_BOX_SIZE), interpolation=cv2.INTER_NEAREST)
+    middle = ZOOM_BOX_SIZE // 2
+    cv2.line(zoomed, (middle, 0), (middle, ZOOM_BOX_SIZE), (0, 0, 255), 1)
+    cv2.line(zoomed, (0, middle), (ZOOM_BOX_SIZE, middle), (0, 0, 255), 1)
+    box_x = w - ZOOM_BOX_SIZE - 10 if x < w / 2 else 10
+    box_y = h - ZOOM_BOX_SIZE - 10 if y < h / 2 else 10
+    canvas[box_y:box_y + ZOOM_BOX_SIZE, box_x:box_x + ZOOM_BOX_SIZE] = zoomed
+    cv2.rectangle(canvas, (box_x, box_y), (box_x + ZOOM_BOX_SIZE, box_y + ZOOM_BOX_SIZE), (255, 255, 255), 2)
 
 
-def pick_points(img_bad, img_ref, pairs=None):
-    picker = _Picker(img_bad, img_ref, pairs)
-    for name in ("BAD", "REF"):
+def pick_points(img_photo, img_ref, pairs=None):
+    picker = PointPicker(img_photo, img_ref, pairs)
+    for name in ("PHOTO", "REF"):
         cv2.namedWindow(name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name, 960, 720)
-        cv2.setMouseCallback(name, picker.on_mouse(name))
+        cv2.setMouseCallback(name, picker.mouse_handler(name))
     try:
         while True:
-            for name in ("BAD", "REF"):
+            for name in ("PHOTO", "REF"):
                 cv2.imshow(name, picker.render(name))
             key = cv2.waitKey(30) & 0xFF
-            if key in (13, 10, 32):  # Enter / Space
+            if key in (KEY_ENTER, KEY_RETURN, KEY_SPACE):
                 if len(picker.pairs()) >= 4:
                     return picker.pairs()
                 logger.info("need at least 4 point pairs")
@@ -133,76 +132,71 @@ def pick_points(img_bad, img_ref, pairs=None):
                 picker.undo()
             elif key == ord("r"):
                 picker.reset()
-            elif key in (27, ord("q")):
+            elif key in (KEY_ESC, ord("q")):
                 return None
     finally:
         cv2.destroyAllWindows()
 
 
-def homography_from_pairs(pairs, img_bad, img_ref, refine=True):
-    pb = np.float32([p[0] for p in pairs])
-    pr = np.float32([p[1] for p in pairs])
+def homography_from_pairs(pairs, img_photo, img_ref, refine=True):
+    photo_pts = np.float32([p for p, _ in pairs])
+    ref_pts = np.float32([r for _, r in pairs])
     if len(pairs) >= 6:
-        # full-res px: one display px is ~4 px on an 8064-wide photo, so allow slack
-        H, mask = cv2.findHomography(pb, pr, cv2.RANSAC, 40.0)
-        bad = [i + 1 for i, m in enumerate(mask.ravel()) if not m]
-        if bad:
-            logger.info(f"point pairs {bad} look inconsistent with the others (ignored)")
+        H, inlier_mask = cv2.findHomography(photo_pts, ref_pts, cv2.RANSAC, CLICK_TOLERANCE_PX)
+        off_pairs = [i + 1 for i, ok in enumerate(inlier_mask.ravel()) if not ok]
+        if off_pairs:
+            logger.info(f"point pairs {off_pairs} disagree with the others and were ignored")
     else:
-        H, _ = cv2.findHomography(pb, pr, 0)
+        H, _ = cv2.findHomography(photo_pts, ref_pts, 0)
     if H is None:
         raise RuntimeError("could not compute a homography from these points")
 
     if refine:
         cfg = im.MatchConfig()
-        for width in (cfg.work_width, 2 * cfg.work_width):  # coarse then fine
-            H, before, after = im.refine_ecc(H, img_bad, img_ref, width, cfg)
-            logger.info(f"ECC refine @{width}px score {before:.4f} -> {after:.4f}")
+        for width in (cfg.work_width, 2 * cfg.work_width):
+            H, before, after = im.ecc_refine_at_width(H, img_photo, img_ref, width, cfg)
+            logger.info(f"ECC refine at {width}px: score {before:.4f} -> {after:.4f}")
     return H / H[2, 2]
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ref", help="reference image (default: __* file in P-FixingImg-big)")
-    ap.add_argument("--bad", help="image to fix (default: other image in P-FixingImg-big)")
-    ap.add_argument("--out", default=".", help="output folder (default: current folder)")
-    ap.add_argument("--points", help="json of saved point pairs; skips (or pre-fills with --edit) clicking")
-    ap.add_argument("--edit", action="store_true", help="open picker pre-filled with --points")
-    ap.add_argument("--no-refine", action="store_true", help="skip ECC fine-tuning")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--ref", help='reference image (default: the "__" image in P-FixingImg-big)')
+    parser.add_argument("--photo", help="photo to align (default: the other image in P-FixingImg-big)")
+    parser.add_argument("--out", default=".", help="output folder")
+    parser.add_argument("--points", help="saved points json to reuse instead of clicking")
+    parser.add_argument("--edit", action="store_true", help="open the picker pre-filled with --points")
+    parser.add_argument("--no-refine", action="store_true", help="skip ECC fine-tuning")
+    args = parser.parse_args()
 
-    folder = Path("P-FixingImg-big").resolve()
-    ref = Path(args.ref or find_ref_img(folder) or "")
-    bad = Path(args.bad or find_to_fixed_img(folder) or "")
-    if not ref.is_file() or not bad.is_file():
-        logger.error(f"ref:{ref} / bad:{bad} not found")
+    fixing_folder = Path("P-FixingImg-big")
+    ref = Path(args.ref or find_reference_image(fixing_folder) or "")
+    photo = Path(args.photo or find_image_to_fix(fixing_folder) or "")
+    if not ref.is_file() or not photo.is_file():
+        logger.error(f"ref '{ref}' or photo '{photo}' not found")
         return
     out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    points_path = out_dir / f"__{bad.stem}_points.json"
+    img_ref, img_photo = im.read_image(ref), im.read_image(photo)
 
-    img_ref, img_bad = im.read_image(ref), im.read_image(bad)
-
-    pairs = None
-    if args.points:
-        pairs = json.loads(Path(args.points).read_text())["pairs"]
+    pairs = json.loads(Path(args.points).read_text())["pairs"] if args.points else None
     if pairs is None or args.edit:
-        pairs = pick_points(img_bad, img_ref, pairs)
+        pairs = pick_points(img_photo, img_ref, pairs)
         if pairs is None:
             logger.info("cancelled")
             return
-        points_path.write_text(json.dumps({"bad": str(bad), "ref": str(ref), "pairs": pairs}, indent=1))
+        points_path = out_dir / f"__{photo.stem}_points.json"
+        saved = {"photo": str(photo.resolve()), "ref": str(ref.resolve()), "pairs": pairs}
+        points_path.write_text(json.dumps(saved, indent=1))
         logger.info(f"points saved to {points_path}")
 
-    H = homography_from_pairs(pairs, img_bad, img_ref, refine=not args.no_refine)
+    H = homography_from_pairs(pairs, img_photo, img_ref, refine=not args.no_refine)
     h, w = img_ref.shape[:2]
-    fixed = cv2.warpPerspective(img_bad, H, (w, h), flags=cv2.INTER_LANCZOS4)
-
-    out_path = out_dir / f"__{bad.stem}.jpg"
-    im._write_jpg_with_exif(out_path, fixed, bad)
-    check_path = out_dir / f"__{bad.stem}_check.jpg"
-    im.write_image(check_path, im.make_check_image(fixed, img_ref), quality=90)
-    logger.info(f"[{out_path}] created, check: {check_path}")
+    aligned = cv2.warpPerspective(img_photo, H, (w, h), flags=cv2.INTER_LANCZOS4)
+    out_path = out_dir / f"__{photo.stem}.jpg"
+    im.save_with_exif(out_path, aligned, photo)
+    im.write_image(out_dir / f"__{photo.stem}_check.jpg", im.make_check_image(aligned, img_ref), quality=90)
+    logger.info(f"[{out_path}] created")
 
 
 if __name__ == "__main__":

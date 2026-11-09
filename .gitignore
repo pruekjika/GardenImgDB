@@ -9,3 +9,7 @@
 !imageDB/Original/*.jpg
 !imageDB/Fixed/*.webp
 meangpu.log
+
+# batch_align.py work folders (originals, outputs, caches)
+P-Originals/
+P-Aligned/

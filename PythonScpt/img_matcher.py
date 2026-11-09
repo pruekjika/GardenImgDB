@@ -1,27 +1,12 @@
-"""Align a new drone photo ("bad") onto a reference photo ("ref").
+"""Align one drone photo onto a reference photo.
 
-Why the old ORB pipeline failed: the two photos are taken months apart
-(dry season vs. green season, different sun/shadows, different resolution),
-so most raw descriptor matches are wrong. Keeping the "top 0.5%" by distance
-still left mostly outliers and RANSAC returned a garbage homography.
-
-New pipeline (all on downscaled, contrast-normalised copies, then scaled back):
-
-1. coarse   - RootSIFT + *guided* matching: the drone is flown from the same spot
-              at the same height, so a point in "bad" is searched for only near
-              the same relative position in "ref". Fit a similarity transform
-              (scale + rotation + shift), which needs very few correct matches.
-              Falls back to un-guided global matching if that fails.
-2. refine   - Warp keypoints with the coarse transform and match again inside a
-              tight radius -> many more correct matches -> full homography.
-3. ecc      - Intensity refinement (findTransformECC) on gradient-magnitude
-              images, which follow edges (roads, ponds, field borders) rather
-              than colour, so season changes matter less.
-
-Every stage is scored (edge correlation in the overlap) and sanity-checked;
-the best valid result wins. A blend/checkerboard "check" image is written next
-to the output so a bad alignment is obvious at a glance. If automatic matching
-still fails, use manual_match.py to click point pairs by hand.
+Photos are taken months apart (dry vs. green season, different shadows), so
+matching is done on downscaled, contrast-normalised copies:
+  coarse  - SIFT matched only near the same position (the drone flies from the
+            same spot), fitted as a similarity; global matching as a fallback
+  refine  - match again in a tight radius around the coarse fit -> homography
+  ecc     - fine-tune on edge maps, which survive season changes better than colour
+The best-scoring plausible stage wins.
 """
 
 from dataclasses import dataclass
@@ -36,25 +21,38 @@ from Util.me_logger import logger
 
 @dataclass
 class MatchConfig:
-    work_width: int = 1600  # both images are resized to this width for matching
+    work_width: int = 1600
     max_features: int = 20000
-    search_radius: float = 0.15  # guided search radius, fraction of work_width
-    refine_radius_px: int = 25  # tight radius (work px) for the refine stage
-    ecc_iters: int = 200
-    ecc_full_width: int = 0  # >0: extra ECC pass at this width (slower, finer)
-    max_scale_change: float = 2.0  # reject transforms that scale more than this
-    max_rotation_deg: float = 45.0  # for the guided (same-spot) coarse stage
+    search_radius_fraction: float = 0.15
+    refine_radius_px: int = 25
+    ecc_iterations: int = 200
+    ecc_hires_width: int = 0
+    max_scale_change: float = 2.0
+    max_rotation_deg: float = 45.0
 
 
 @dataclass
 class MatchResult:
-    homography: np.ndarray  # maps full-res bad pixels -> full-res ref pixels
+    photo_to_ref: np.ndarray
     stage: str
     score: float
     inliers: int
 
 
-# ---------------------------------------------------------------- image utils
+@dataclass
+class PreparedImage:
+    gray: np.ndarray
+    edges: np.ndarray
+    content_mask: np.ndarray
+    scale: float
+
+
+@dataclass
+class Keypoints:
+    points: np.ndarray
+    descriptors: np.ndarray
+
+
 def read_image(path):
     img = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_COLOR)
     if img is None:
@@ -63,301 +61,256 @@ def read_image(path):
 
 
 def write_image(path, img, quality=95):
-    ext = Path(path).suffix or ".jpg"
-    ok, buf = cv2.imencode(ext, img, [cv2.IMWRITE_JPEG_QUALITY, quality])
+    ok, encoded = cv2.imencode(Path(path).suffix or ".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, quality])
     if not ok:
         raise IOError(f"cannot encode image: {path}")
-    buf.tofile(str(path))
+    encoded.tofile(str(path))
 
 
-def _prep(img, width):
-    """Resize to `width`, grayscale, CLAHE.
-    Returns (gray, edges, valid, scale). `valid` (uint8 0/255) excludes black
-    borders: a reference that is itself a warped photo has black corners whose
-    hard edge would otherwise attract features and pull the ECC fit."""
-    s = width / img.shape[1]
-    small = cv2.resize(img, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
-    valid = cv2.erode((small.max(axis=2) > 8).astype(np.uint8) * 255, np.ones((15, 15), np.uint8))
-    gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
-    gray = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
-    g = cv2.GaussianBlur(gray, (0, 0), 2).astype(np.float32)
-    edges = cv2.magnitude(cv2.Sobel(g, cv2.CV_32F, 1, 0), cv2.Sobel(g, cv2.CV_32F, 0, 1))
-    edges *= valid > 0
-    return gray, edges / (edges.max() + 1e-6), valid, s
+def save_with_exif(out_path, img_bgr, exif_source, quality=95):
+    with Image.open(exif_source) as source:
+        exif = source.info.get("exif")
+    options = {"quality": quality}
+    if exif:
+        options["exif"] = exif
+    else:
+        logger.info(f"no EXIF in {exif_source}, saved without metadata")
+    image_format = "WEBP" if Path(out_path).suffix.lower() == ".webp" else "JPEG"
+    Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)).save(out_path, image_format, **options)
 
 
-def _scale_h(H, s_bad, s_ref):
-    """Convert a homography between scaled images into one between the originals."""
-    return np.diag([1 / s_ref, 1 / s_ref, 1]) @ H @ np.diag([s_bad, s_bad, 1])
+def make_check_image(aligned, ref, width=2400, tiles=8):
+    """Left half: 50/50 blend. Right half: checkerboard, where misalignment shows as broken edges."""
+    scale = width / 2 / ref.shape[1]
+    a = cv2.resize(aligned, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    b = cv2.resize(ref, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    h, w = a.shape[:2]
+    rows, cols = np.mgrid[0:h, 0:w]
+    is_a_tile = ((rows * tiles // h + cols * tiles // w) % 2 == 0)[..., None]
+    return np.hstack([cv2.addWeighted(a, 0.5, b, 0.5, 0), np.where(is_a_tile, a, b)])
 
 
-# --------------------------------------------------------------- matching
-class _Features:
-    def __init__(self, gray, valid, n):
-        kp, des = cv2.SIFT_create(n).detectAndCompute(gray, valid)
-        self.pts = np.float32([k.pt for k in kp]).reshape(-1, 2)
-        if des is None:
-            des = np.zeros((0, 128), np.float32)
-        des = des / (des.sum(axis=1, keepdims=True) + 1e-7)  # RootSIFT
-        self.des = np.sqrt(des).astype(np.float32)
+def prepare(img, width):
+    """content_mask excludes black borders: a ref that is itself a warped photo
+    has black corners whose hard edge would attract features and pull the fit."""
+    scale = width / img.shape[1]
+    small = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    content_mask = cv2.erode((small.max(axis=2) > 8).astype(np.uint8) * 255, np.ones((15, 15), np.uint8))
+    gray = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY))
+    blurred = cv2.GaussianBlur(gray, (0, 0), 2).astype(np.float32)
+    edges = cv2.magnitude(cv2.Sobel(blurred, cv2.CV_32F, 1, 0), cv2.Sobel(blurred, cv2.CV_32F, 0, 1))
+    edges *= content_mask > 0
+    return PreparedImage(gray, edges / (edges.max() + 1e-6), content_mask, scale)
 
 
-def _guided_matches(fb, fr, bad_pts, shape, radius, ratio, tiles=8):
-    """Match each bad keypoint only to ref keypoints within `radius` of
-    `bad_pts` (bad keypoints already mapped into ref coordinates)."""
-    bf = cv2.BFMatcher(cv2.NORM_L2)
-    h, w = shape
-    th, tw = h / tiles, w / tiles
-    pairs = []
+def detect_keypoints(prepared: PreparedImage, max_features):
+    found, descriptors = cv2.SIFT_create(max_features).detectAndCompute(prepared.gray, prepared.content_mask)
+    if descriptors is None:
+        descriptors = np.zeros((0, 128), np.float32)
+    root_sift = np.sqrt(descriptors / (descriptors.sum(axis=1, keepdims=True) + 1e-7))
+    return Keypoints(np.float32([k.pt for k in found]).reshape(-1, 2), root_sift.astype(np.float32))
+
+
+def work_to_full(H, photo_scale, ref_scale):
+    return np.diag([1 / ref_scale, 1 / ref_scale, 1]) @ H @ np.diag([photo_scale, photo_scale, 1])
+
+
+def full_to_work(H, photo_scale, ref_scale):
+    return np.diag([ref_scale, ref_scale, 1]) @ H @ np.diag([1 / photo_scale, 1 / photo_scale, 1])
+
+
+def match_near(photo: Keypoints, ref: Keypoints, predicted_points, ref_shape, radius, ratio, tiles=8):
+    """Match each photo keypoint only to ref keypoints within `radius` of where it is predicted to land."""
+    matcher = cv2.BFMatcher(cv2.NORM_L2)
+    h, w = ref_shape
+    tile_h, tile_w = h / tiles, w / tiles
+    matches = []
     for ty in range(tiles):
         for tx in range(tiles):
-            x0, x1, y0, y1 = tx * tw, (tx + 1) * tw, ty * th, (ty + 1) * th
-            qi = np.where(
-                (bad_pts[:, 0] >= x0) & (bad_pts[:, 0] < x1)
-                & (bad_pts[:, 1] >= y0) & (bad_pts[:, 1] < y1)
+            x0, x1, y0, y1 = tx * tile_w, (tx + 1) * tile_w, ty * tile_h, (ty + 1) * tile_h
+            photo_idx = np.where(
+                (predicted_points[:, 0] >= x0) & (predicted_points[:, 0] < x1)
+                & (predicted_points[:, 1] >= y0) & (predicted_points[:, 1] < y1)
             )[0]
-            ti = np.where(
-                (fr.pts[:, 0] >= x0 - radius) & (fr.pts[:, 0] < x1 + radius)
-                & (fr.pts[:, 1] >= y0 - radius) & (fr.pts[:, 1] < y1 + radius)
+            ref_idx = np.where(
+                (ref.points[:, 0] >= x0 - radius) & (ref.points[:, 0] < x1 + radius)
+                & (ref.points[:, 1] >= y0 - radius) & (ref.points[:, 1] < y1 + radius)
             )[0]
-            if len(qi) == 0 or len(ti) < 2:
+            if len(photo_idx) == 0 or len(ref_idx) < 2:
                 continue
-            dist = np.linalg.norm(bad_pts[qi][:, None] - fr.pts[ti][None], axis=2)
-            mask = (dist < radius).astype(np.uint8)
-            for m in bf.knnMatch(fb.des[qi], fr.des[ti], k=2, mask=mask):
-                if len(m) == 2 and m[0].distance < ratio * m[1].distance:
-                    pairs.append((qi[m[0].queryIdx], ti[m[0].trainIdx]))
-                elif len(m) == 1:
-                    pairs.append((qi[m[0].queryIdx], ti[m[0].trainIdx]))
-    if not pairs:
+            distance = np.linalg.norm(predicted_points[photo_idx][:, None] - ref.points[ref_idx][None], axis=2)
+            within_radius = (distance < radius).astype(np.uint8)
+            for best in matcher.knnMatch(photo.descriptors[photo_idx], ref.descriptors[ref_idx], k=2, mask=within_radius):
+                if len(best) == 1 or (len(best) == 2 and best[0].distance < ratio * best[1].distance):
+                    matches.append((photo_idx[best[0].queryIdx], ref_idx[best[0].trainIdx], best[0].distance))
+    return keep_best_match_per_ref_point(photo, ref, matches)
+
+
+def match_anywhere(photo: Keypoints, ref: Keypoints, ratio=0.8):
+    matches = []
+    for best in cv2.BFMatcher(cv2.NORM_L2).knnMatch(photo.descriptors, ref.descriptors, k=2):
+        if len(best) == 2 and best[0].distance < ratio * best[1].distance:
+            matches.append((best[0].queryIdx, best[0].trainIdx, best[0].distance))
+    return keep_best_match_per_ref_point(photo, ref, matches)
+
+
+def keep_best_match_per_ref_point(photo: Keypoints, ref: Keypoints, matches):
+    """Many photo points on one ref point let RANSAC accept a degenerate zero-scale fit."""
+    if not matches:
         return np.zeros((0, 2), np.float32), np.zeros((0, 2), np.float32)
-    pairs = np.array(pairs)
-    return fb.pts[pairs[:, 0]], fr.pts[pairs[:, 1]]
+    matches = np.array(matches)
+    matches = matches[np.argsort(matches[:, 2])]
+    _, first_per_ref = np.unique(matches[:, 1], return_index=True)
+    matches = matches[np.sort(first_per_ref)].astype(int)
+    return photo.points[matches[:, 0]], ref.points[matches[:, 1]]
 
 
-def _global_matches(fb, fr, ratio=0.8):
-    good = []
-    for m in cv2.BFMatcher(cv2.NORM_L2).knnMatch(fb.des, fr.des, k=2):
-        if len(m) == 2 and m[0].distance < ratio * m[1].distance:
-            good.append((m[0].queryIdx, m[0].trainIdx))
-    if not good:
-        return np.zeros((0, 2), np.float32), np.zeros((0, 2), np.float32)
-    good = np.array(good)
-    return fb.pts[good[:, 0]], fr.pts[good[:, 1]]
-
-
-def _fit_similarity(pb, pr, thresh=6.0):
-    if len(pb) < 4:
+def fit_similarity(photo_pts, ref_pts):
+    if len(photo_pts) < 4:
         return None, 0
-    A, mask = cv2.estimateAffinePartial2D(
-        pb, pr, method=cv2.RANSAC, ransacReprojThreshold=thresh,
-        maxIters=20000, confidence=0.999,
+    A, inlier_mask = cv2.estimateAffinePartial2D(
+        photo_pts, ref_pts, method=cv2.RANSAC, ransacReprojThreshold=6.0, maxIters=20000, confidence=0.999
     )
     if A is None:
         return None, 0
-    return np.vstack([A, [0, 0, 1]]), int(mask.sum())
+    return np.vstack([A, [0, 0, 1]]), int(inlier_mask.sum())
 
 
-def _fit_homography(pb, pr, thresh=3.0):
-    if len(pb) < 8:
-        return None, 0
-    H, mask = cv2.findHomography(pb, pr, cv2.USAC_MAGSAC, thresh, maxIters=20000, confidence=0.9999)
+def fit_homography(photo_pts, ref_pts):
+    """Returns (H, inlier_mask) or (None, None)."""
+    if len(photo_pts) < 8:
+        return None, None
+    H, inlier_mask = cv2.findHomography(photo_pts, ref_pts, cv2.USAC_MAGSAC, 3.0, maxIters=20000, confidence=0.9999)
     if H is None:
-        return None, 0
-    return H, int(mask.sum())
+        return None, None
+    return H, inlier_mask.ravel().astype(bool)
 
 
-# --------------------------------------------------------------- validation
-def _is_sane(H, bad_shape, ref_shape, cfg, max_rot=None):
-    """Reject degenerate homographies (flips, huge zoom, twisted corners)."""
+def is_plausible(H, photo_shape, ref_shape, cfg: MatchConfig, max_rotation_deg=None):
+    """Rejects flips, twisted corners, huge zoom, a photo landing off the ref, and too much rotation."""
     if H is None or not np.all(np.isfinite(H)):
         return False
-    h, w = bad_shape[:2]
-    corners = np.float32([[0, 0], [w, 0], [w, h], [0, h]]).reshape(-1, 1, 2)
-    c = cv2.perspectiveTransform(corners, H).reshape(-1, 2)
-    if not cv2.isContourConvex(c.astype(np.float32)):
+    h, w = photo_shape[:2]
+    corners = cv2.perspectiveTransform(np.float32([[0, 0], [w, 0], [w, h], [0, h]]).reshape(-1, 1, 2), H).reshape(-1, 2)
+    if not cv2.isContourConvex(corners.astype(np.float32)):
         return False
-    area_ratio = cv2.contourArea(c) / float(w * h)
-    lo, hi = 1 / cfg.max_scale_change**2, cfg.max_scale_change**2
-    if not (lo < area_ratio < hi):
+    area_ratio = cv2.contourArea(corners) / float(w * h)
+    if not (1 / cfg.max_scale_change**2 < area_ratio < cfg.max_scale_change**2):
         return False
-    # the warped image must overlap the reference a good amount
-    rh, rw = ref_shape[:2]
-    cx, cy = c.mean(axis=0)
-    if not (-0.25 * rw < cx < 1.25 * rw and -0.25 * rh < cy < 1.25 * rh):
+    ref_h, ref_w = ref_shape[:2]
+    center_x, center_y = corners.mean(axis=0)
+    if not (-0.25 * ref_w < center_x < 1.25 * ref_w and -0.25 * ref_h < center_y < 1.25 * ref_h):
         return False
-    if max_rot is not None:
-        top = c[1] - c[0]
-        rot = np.degrees(np.arctan2(top[1], top[0]))
-        if abs(rot) > max_rot:
+    if max_rotation_deg is not None:
+        top_edge = corners[1] - corners[0]
+        if abs(np.degrees(np.arctan2(top_edge[1], top_edge[0]))) > max_rotation_deg:
             return False
     return True
 
 
-def _score(H, gb_grad, gr_grad):
-    """Normalised correlation of edge maps in the overlap region (-1..1)."""
-    size = (gr_grad.shape[1], gr_grad.shape[0])
-    warped = cv2.warpPerspective(gb_grad, H, size)
-    valid = cv2.warpPerspective(np.ones_like(gb_grad), H, size) > 0.5
-    if valid.sum() < 0.2 * valid.size:
+def edge_similarity(H, photo_edges, ref_edges):
+    """Correlation of edge maps where the warped photo overlaps the ref, -1..1."""
+    size = (ref_edges.shape[1], ref_edges.shape[0])
+    warped = cv2.warpPerspective(photo_edges, H, size)
+    overlap = cv2.warpPerspective(np.ones_like(photo_edges), H, size) > 0.5
+    if overlap.sum() < 0.2 * overlap.size:
         return -1.0
-    a, b = warped[valid], gr_grad[valid]
+    a, b = warped[overlap], ref_edges[overlap]
     a, b = a - a.mean(), b - b.mean()
     return float((a * b).sum() / (np.sqrt((a * a).sum() * (b * b).sum()) + 1e-9))
 
 
-def _ecc(H_init, gb_grad, gr_grad, iters):
-    """ECC maps template(ref) -> input(bad), so invert in and out."""
-    warp = np.linalg.inv(H_init).astype(np.float32)
-    warp /= warp[2, 2]
-    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, iters, 1e-6)
-    _, warp = cv2.findTransformECC(gr_grad, gb_grad, warp, cv2.MOTION_HOMOGRAPHY, criteria, None, 5)
-    H = np.linalg.inv(warp)
-    return H / H[2, 2]
+def ecc_refine(H, photo_edges, ref_edges, iterations):
+    """findTransformECC maps ref -> photo, hence the inversions."""
+    ref_to_photo = np.linalg.inv(H).astype(np.float32)
+    ref_to_photo /= ref_to_photo[2, 2]
+    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, iterations, 1e-6)
+    _, ref_to_photo = cv2.findTransformECC(ref_edges, photo_edges, ref_to_photo, cv2.MOTION_HOMOGRAPHY, criteria, None, 5)
+    refined = np.linalg.inv(ref_to_photo)
+    return refined / refined[2, 2]
 
 
-def refine_ecc(H_full, img_bad, img_ref, width, cfg: MatchConfig):
-    """ECC-refine a full-res homography at `width`. Keeps the input unless the
-    edge score improves. Returns (H_full, score_before, score_after)."""
-    gb, eb, _, sb = _prep(img_bad, width)
-    gr, er, _, sr = _prep(img_ref, width)
-    H = np.diag([sr, sr, 1]) @ H_full @ np.diag([1 / sb, 1 / sb, 1])
-    before = _score(H, eb, er)
+def ecc_refine_at_width(photo_to_ref, img_photo, img_ref, width, cfg: MatchConfig):
+    """Returns (photo_to_ref, score_before, score_after); keeps the input unless the score improves."""
+    photo, ref = prepare(img_photo, width), prepare(img_ref, width)
+    H = full_to_work(photo_to_ref, photo.scale, ref.scale)
+    before = edge_similarity(H, photo.edges, ref.edges)
     try:
-        H2 = _ecc(H, eb, er, cfg.ecc_iters)
+        refined = ecc_refine(H, photo.edges, ref.edges, cfg.ecc_iterations)
     except cv2.error:
-        return H_full, before, before
-    after = _score(H2, eb, er)
-    if after > before and _is_sane(H2, gb.shape, gr.shape, cfg):
-        return _scale_h(H2, sb, sr), before, after
-    return H_full, before, after
+        return photo_to_ref, before, before
+    after = edge_similarity(refined, photo.edges, ref.edges)
+    if after > before and is_plausible(refined, photo.gray.shape, ref.gray.shape, cfg):
+        return work_to_full(refined, photo.scale, ref.scale), before, after
+    return photo_to_ref, before, after
 
 
-# --------------------------------------------------------------- main API
-def estimate_alignment(img_bad, img_ref, cfg: MatchConfig = None) -> MatchResult:
+def estimate_alignment(img_photo, img_ref, cfg: MatchConfig = None) -> MatchResult:
     cfg = cfg or MatchConfig()
-    note = logger.info
+    photo, ref = prepare(img_photo, cfg.work_width), prepare(img_ref, cfg.work_width)
+    photo_kp, ref_kp = detect_keypoints(photo, cfg.max_features), detect_keypoints(ref, cfg.max_features)
+    logger.info(f"keypoints photo={len(photo_kp.points)} ref={len(ref_kp.points)} (work width {cfg.work_width})")
 
-    gb, gb_grad, vb, sb = _prep(img_bad, cfg.work_width)
-    gr, gr_grad, vr, sr = _prep(img_ref, cfg.work_width)
-    fb, fr = _Features(gb, vb, cfg.max_features), _Features(gr, vr, cfg.max_features)
-    note(f"features bad={len(fb.pts)} ref={len(fr.pts)} (work width {cfg.work_width})")
+    candidates = []
 
-    candidates = []  # (score, stage, H_work, inliers)
-
-    def consider(stage, H, inliers, max_rot=None):
+    def consider(stage, H, inliers, max_rotation_deg=None):
         if H is None:
-            note(f"[{stage}] no transform")
-            return
-        if not _is_sane(H, gb.shape, gr.shape, cfg, max_rot):
-            note(f"[{stage}] rejected (degenerate transform), inliers={inliers}")
-            return
-        sc = _score(H, gb_grad, gr_grad)
-        note(f"[{stage}] inliers={inliers} score={sc:.4f}")
-        candidates.append((sc, stage, H, inliers))
+            logger.info(f"[{stage}] no transform")
+        elif not is_plausible(H, photo.gray.shape, ref.gray.shape, cfg, max_rotation_deg):
+            logger.info(f"[{stage}] rejected as implausible, inliers={inliers}")
+        else:
+            score = edge_similarity(H, photo.edges, ref.edges)
+            logger.info(f"[{stage}] inliers={inliers} score={score:.4f}")
+            candidates.append(MatchResult(H, stage, score, inliers))
 
-    # 1. coarse: guided (same framing assumption), then global fallback
-    radius = cfg.search_radius * cfg.work_width
-    pb, pr = _guided_matches(fb, fr, fb.pts, gr.shape, radius, ratio=0.85)
-    H, n = _fit_similarity(pb, pr)
-    note(f"[coarse-guided] candidate matches={len(pb)}")
-    consider("coarse-guided", H, n, cfg.max_rotation_deg)
+    def best():
+        return max(candidates, key=lambda c: c.score)
 
+    photo_pts, ref_pts = match_near(
+        photo_kp, ref_kp, photo_kp.points, ref.gray.shape, cfg.search_radius_fraction * cfg.work_width, ratio=0.85
+    )
+    consider("coarse-near", *fit_similarity(photo_pts, ref_pts), cfg.max_rotation_deg)
     if not candidates:
-        pb, pr = _global_matches(fb, fr)
-        note(f"[coarse-global] candidate matches={len(pb)}")
-        H, n = _fit_similarity(pb, pr)
-        consider("coarse-global", H, n)
-
+        consider("coarse-anywhere", *fit_similarity(*match_anywhere(photo_kp, ref_kp)))
     if not candidates:
-        raise RuntimeError(
-            "automatic matching failed - use manual_match.py to pick point pairs by hand"
-        )
+        raise RuntimeError("automatic matching failed - use manual_match.py to pick point pairs by hand")
 
-    # 2. refine: re-match in a tight radius around the coarse prediction
-    H_coarse = max(candidates, key=lambda c: c[0])[2]
-    warped_pts = cv2.perspectiveTransform(fb.pts.reshape(-1, 1, 2), H_coarse).reshape(-1, 2)
-    pb, pr = _guided_matches(fb, fr, warped_pts, gr.shape, cfg.refine_radius_px, ratio=0.9)
-    note(f"[refine] candidate matches={len(pb)}")
-    H, n = _fit_homography(pb, pr)
-    consider("refine", H, n)
+    predicted = cv2.perspectiveTransform(photo_kp.points.reshape(-1, 1, 2), best().photo_to_ref).reshape(-1, 2)
+    photo_pts, ref_pts = match_near(photo_kp, ref_kp, predicted, ref.gray.shape, cfg.refine_radius_px, ratio=0.9)
+    H, inlier_mask = fit_homography(photo_pts, ref_pts)
+    consider("refine", H, 0 if inlier_mask is None else int(inlier_mask.sum()))
 
-    # 3. ECC on edge maps, starting from the best so far
-    best = max(candidates, key=lambda c: c[0])
     try:
-        H = _ecc(best[2], gb_grad, gr_grad, cfg.ecc_iters)
-        consider("ecc", H, best[3])
-    except cv2.error as e:
-        note(f"[ecc] did not converge: {e.msg if hasattr(e, 'msg') else e}")
+        consider("ecc", ecc_refine(best().photo_to_ref, photo.edges, ref.edges, cfg.ecc_iterations), best().inliers)
+    except cv2.error:
+        logger.info("[ecc] did not converge")
 
-    best = max(candidates, key=lambda c: c[0])
-    H_full = _scale_h(best[2], sb, sr)
+    result = best()
+    result.photo_to_ref = work_to_full(result.photo_to_ref, photo.scale, ref.scale)
+    if cfg.ecc_hires_width > cfg.work_width:
+        refined, before, after = ecc_refine_at_width(result.photo_to_ref, img_photo, img_ref, cfg.ecc_hires_width, cfg)
+        logger.info(f"[ecc-hires] score {before:.4f} -> {after:.4f} (width {cfg.ecc_hires_width})")
+        if refined is not result.photo_to_ref:
+            result = MatchResult(refined, "ecc-hires", after, result.inliers)
 
-    # 4. optional extra ECC pass at a higher resolution
-    if cfg.ecc_full_width > cfg.work_width:
-        H2, before, after = refine_ecc(H_full, img_bad, img_ref, cfg.ecc_full_width, cfg)
-        note(f"[ecc-hires] score {before:.4f} -> {after:.4f} (width {cfg.ecc_full_width})")
-        if H2 is not H_full:
-            H_full, best = H2, (after, "ecc-hires", None, best[3])
-
-    note(f"chosen stage: {best[1]} (score {best[0]:.4f})")
-    return MatchResult(H_full / H_full[2, 2], best[1], best[0], best[3])
+    result.photo_to_ref = result.photo_to_ref / result.photo_to_ref[2, 2]
+    logger.info(f"chosen stage: {result.stage} (score {result.score:.4f})")
+    return result
 
 
-def make_check_image(warped, ref, width=2400, tiles=8):
-    """Left: 50/50 blend. Right: checkerboard (misalignment = broken edges)."""
-    s = width / 2 / ref.shape[1]
-    a = cv2.resize(warped, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
-    b = cv2.resize(ref, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
-    blend = cv2.addWeighted(a, 0.5, b, 0.5, 0)
-    h, w = a.shape[:2]
-    yy, xx = np.mgrid[0:h, 0:w]
-    checker = ((yy * tiles // h + xx * tiles // w) % 2 == 0)[..., None]
-    board = np.where(checker, a, b)
-    return np.hstack([blend, board])
-
-
-def _write_jpg_with_exif(out_path, img_bgr, exif_source, quality=95):
-    """Encode once with the source photo's EXIF (date, GPS...) attached."""
-    with Image.open(exif_source) as src:
-        exif = src.info.get("exif")
-    pil = Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
-    kwargs = {"quality": quality}
-    if exif:
-        kwargs["exif"] = exif
-    else:
-        logger.info(f"no EXIF in {exif_source}, saved without metadata")
-    pil.save(out_path, "JPEG", **kwargs)
-
-
-def create_fix_image(
-    ref_path,
-    bad_path,
-    out_dir,
-    cfg: MatchConfig = None,
-    lead_word="__",
-    write_check=True,
-):
-    """Align `bad_path` onto `ref_path`, write `<out_dir>/<lead_word><bad stem>.jpg`
-    (with the bad image's EXIF) and a `..._check.jpg` overlay. Returns MatchResult."""
-    ref_path, bad_path, out_dir = Path(ref_path), Path(bad_path), Path(out_dir)
-    logger.info(f"fixing: ref '{ref_path.name}' <- bad '{bad_path.name}'")
-
-    img_ref = read_image(ref_path)
-    img_bad = read_image(bad_path)
-    result = estimate_alignment(img_bad, img_ref, cfg)
+def create_fix_image(ref_path, photo_path, out_dir, cfg: MatchConfig = None, prefix="__"):
+    """Writes <out_dir>/<prefix><photo>.jpg (with the photo's EXIF) and <prefix><photo>_check.jpg."""
+    ref_path, photo_path, out_dir = Path(ref_path), Path(photo_path), Path(out_dir)
+    logger.info(f"aligning '{photo_path.name}' onto ref '{ref_path.name}'")
+    img_ref, img_photo = read_image(ref_path), read_image(photo_path)
+    result = estimate_alignment(img_photo, img_ref, cfg)
 
     h, w = img_ref.shape[:2]
-    fixed = cv2.warpPerspective(img_bad, result.homography, (w, h), flags=cv2.INTER_LANCZOS4)
-
+    aligned = cv2.warpPerspective(img_photo, result.photo_to_ref, (w, h), flags=cv2.INTER_LANCZOS4)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{lead_word}{bad_path.stem}.jpg"
-    _write_jpg_with_exif(out_path, fixed, bad_path)
-    logger.info(f"[{out_path}] created!  stage={result.stage} score={result.score:.4f}")
-
-    if write_check:
-        check_path = out_dir / f"{lead_word}{bad_path.stem}_check.jpg"
-        write_image(check_path, make_check_image(fixed, img_ref), quality=90)
-        logger.info(f"[{check_path}] created (blend | checkerboard)")
-
+    out_path = out_dir / f"{prefix}{photo_path.stem}.jpg"
+    save_with_exif(out_path, aligned, photo_path)
+    check_path = out_dir / f"{prefix}{photo_path.stem}_check.jpg"
+    write_image(check_path, make_check_image(aligned, img_ref), quality=90)
+    logger.info(f"[{out_path}] created, check: {check_path.name}")
     return result
