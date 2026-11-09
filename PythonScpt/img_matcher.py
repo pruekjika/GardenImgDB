@@ -18,6 +18,9 @@ from PIL import Image
 
 from Util.me_logger import logger
 
+JPG_QUALITY = 95
+WEBP_QUALITY = 50  # same file size as the File Converter webp files already in ImageDB
+
 
 @dataclass
 class MatchConfig:
@@ -67,16 +70,19 @@ def write_image(path, img, quality=95):
     encoded.tofile(str(path))
 
 
-def save_with_exif(out_path, img_bgr, exif_source, quality=95):
-    with Image.open(exif_source) as source:
-        exif = source.info.get("exif")
-    options = {"quality": quality}
-    if exif:
-        options["exif"] = exif
-    else:
-        logger.info(f"no EXIF in {exif_source}, saved without metadata")
-    image_format = "WEBP" if Path(out_path).suffix.lower() == ".webp" else "JPEG"
-    Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)).save(out_path, image_format, **options)
+def save_with_metadata(out_path, img_bgr, metadata_source, quality=None):
+    """Saves .jpg or .webp with the source photo's EXIF and XMP (drone date, GPS, gimbal)."""
+    is_webp = Path(out_path).suffix.lower() == ".webp"
+    options = {"quality": quality or (WEBP_QUALITY if is_webp else JPG_QUALITY)}
+    if is_webp:
+        options["method"] = 6
+    with Image.open(metadata_source) as source:
+        for key in ("exif", "xmp"):
+            if source.info.get(key):
+                options[key] = source.info[key]
+    if "exif" not in options:
+        logger.info(f"no EXIF in {metadata_source}, saved without it")
+    Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)).save(out_path, "WEBP" if is_webp else "JPEG", **options)
 
 
 def make_check_image(aligned, ref, width=2400, tiles=8):
@@ -299,7 +305,8 @@ def estimate_alignment(img_photo, img_ref, cfg: MatchConfig = None) -> MatchResu
 
 
 def create_fix_image(ref_path, photo_path, out_dir, cfg: MatchConfig = None, prefix="__"):
-    """Writes <out_dir>/<prefix><photo>.jpg (with the photo's EXIF) and <prefix><photo>_check.jpg."""
+    """Writes <out_dir>/<prefix><photo>.jpg (with the photo's metadata) and <prefix><photo>_check.jpg.
+    Returns (MatchResult, aligned image)."""
     ref_path, photo_path, out_dir = Path(ref_path), Path(photo_path), Path(out_dir)
     logger.info(f"aligning '{photo_path.name}' onto ref '{ref_path.name}'")
     img_ref, img_photo = read_image(ref_path), read_image(photo_path)
@@ -309,8 +316,8 @@ def create_fix_image(ref_path, photo_path, out_dir, cfg: MatchConfig = None, pre
     aligned = cv2.warpPerspective(img_photo, result.photo_to_ref, (w, h), flags=cv2.INTER_LANCZOS4)
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{prefix}{photo_path.stem}.jpg"
-    save_with_exif(out_path, aligned, photo_path)
+    save_with_metadata(out_path, aligned, photo_path)
     check_path = out_dir / f"{prefix}{photo_path.stem}_check.jpg"
     write_image(check_path, make_check_image(aligned, img_ref), quality=90)
     logger.info(f"[{out_path}] created, check: {check_path.name}")
-    return result
+    return result, aligned

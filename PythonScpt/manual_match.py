@@ -1,6 +1,7 @@
 """Align a photo by clicking matching points, for when automatic matching is off.
 
-    python PythonScpt/manual_match.py                     photo + "__" ref from P-FixingImg-big
+    python PythonScpt/manual_match.py                     photo + "__" ref from P-FixingImg-big,
+                                                          result also saved as ImageDB/<number>.webp
     python PythonScpt/manual_match.py --points p.json     reuse saved points (add --edit to adjust)
     python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/95.jpg --out P-Aligned
 
@@ -20,7 +21,7 @@ import cv2
 import numpy as np
 
 import img_matcher as im
-from Util.folder_util import find_image_to_fix, find_reference_image
+from Util.folder_util import db_path_for, find_image_to_fix, find_reference_image
 from Util.me_logger import logger
 
 DISPLAY_WIDTH = 1800
@@ -194,9 +195,13 @@ def main():
     h, w = img_ref.shape[:2]
     aligned = cv2.warpPerspective(img_photo, H, (w, h), flags=cv2.INTER_LANCZOS4)
     out_path = out_dir / f"__{photo.stem}.jpg"
-    im.save_with_exif(out_path, aligned, photo)
+    im.save_with_metadata(out_path, aligned, photo)
     im.write_image(out_dir / f"__{photo.stem}_check.jpg", im.make_check_image(aligned, img_ref), quality=90)
     logger.info(f"[{out_path}] created")
+    if args.photo is None:
+        db_path = db_path_for(photo)
+        im.save_with_metadata(db_path, aligned, photo)
+        logger.info(f"{db_path} saved")
 
 
 if __name__ == "__main__":

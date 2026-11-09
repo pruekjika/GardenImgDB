@@ -273,7 +273,7 @@ def main():
     parser.add_argument("--out", default="P-Aligned", help="output folder")
     parser.add_argument("--width", type=int, default=4096, help="output width; height keeps the master's aspect")
     parser.add_argument("--format", choices=("jpg", "webp"), default="jpg")
-    parser.add_argument("--quality", type=int, default=95)
+    parser.add_argument("--quality", type=int, help="default: 95 for jpg, 50 for webp (same as ImageDB)")
     parser.add_argument("--neighbors", type=int, default=3, help="how many following photos each photo is matched with")
     parser.add_argument("--min-inliers", type=int, default=25, help="matches needed to trust a pair")
     parser.add_argument("--drop-px", type=float, default=8.0, help="drop pairs disagreeing more than this (output px)")
@@ -351,7 +351,7 @@ def main():
         if out_path.exists() and unchanged and not args.rerender:
             continue
         aligned = cv2.warpPerspective(im.read_image(paths[name]), original_to_output, (out_w, out_h), flags=cv2.INTER_LANCZOS4)
-        im.save_with_exif(out_path, aligned, paths[name], quality=args.quality)
+        im.save_with_metadata(out_path, aligned, paths[name], quality=args.quality)
         im.write_image(check_dir / f"{name}.jpg", im.make_check_image(aligned, master_image, width=1600), quality=85)
         logger.info(f"{name}: written, residual {'-' if residual is None else f'{residual:.1f}'} px")
 

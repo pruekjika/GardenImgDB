@@ -16,10 +16,9 @@ CompareWeb: [ImageCompare](https://pruekjika.github.io/GardenImgDB/)
 1. 2025-06-20 onedrive มหาลัยพังไปแล้วคือ ได้แค่ 5gb ซึ่งไม่พอเก็บภาพ ทำให้ข้ามขั้นตอนนี้ได้ เอาไปไว้ใน google drive นี้แทน https://drive.google.com/drive/folders/1TMBsS2RonKXjFwxCICXABQEelqACY30W?usp=drive_link
 
 2. แก้ภาพให้ตรงกันโดย นำ `__ref` และ `ที่ต้องการจะแก้.jpg` ไปไว้ใน `P-FixingImg-big` (เลือก ref จาก https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh)
-3. run `main.py` เพื่อทำการ fix image
-4. ถ้าไฟล์ภาพทำได้ไม่มีปัญหา ให้เราใช้ file converter แปลงมันให้เป็น .webp
-5. ย้าย .webp ไปไว้ใน folder `imageDB`
-6. Upload file `__.jpg` ทีแก้แล้วกลับขึ้นไปใน onedrive
+3. run `main.py` เพื่อทำการ fix image ได้ `ImageDB/<เลข>.webp` เลย (ชื่อภาพเป็นเลข เช่น `98.JPG` จะใช้เลขนั้น ถ้าไม่ใช่เลขจะใช้เลขถัดไป)
+4. เปิด `__<ชื่อ>_check.jpg` เช็คว่าตรง (ซ้าย = ภาพซ้อน, ขวา = ตารางหมากรุก ถ้าเส้นถนน/ขอบบ่อขาดตอน แปลว่าไม่ตรง) ถ้าไม่ตรง run `python PythonScpt/manual_match.py` แล้วคลิกจุดคู่กัน
+5. Upload file `__.jpg` ทีแก้แล้วกลับขึ้นไปใน onedrive
 
 ### ทำใหม่ทั้งหมดด้วย ref เดียว (`batch_align.py`)
 
@@ -28,7 +27,7 @@ CompareWeb: [ImageCompare](https://pruekjika.github.io/GardenImgDB/)
 1. โหลดภาพ original เต็มขนาดทั้งหมดมาไว้ใน `P-Originals/` ตั้งชื่อตามลำดับ `0.jpg`, `1.jpg`, ... (ลำดับเวลาสำคัญ เพราะภาพจะถูกจับคู่กับภาพข้างเคียง)
 2. เลือกภาพ master 1 ภาพ (ฟ้าโปร่ง ไม่มีเงายาว ถ่ายตรงลงมา) แล้ว run
    `python PythonScpt/batch_align.py --src P-Originals --ref 95 --out P-Aligned`
-   (ใส่ `--format webp` ถ้าอยากได้ .webp เลย)
+   (ใส่ `--format webp` ถ้าอยากได้ .webp เลย คุณภาพเท่ากับไฟล์ใน ImageDB)
 3. เปิด `P-Aligned/report.html` ภาพที่แย่สุดอยู่บนสุด แถวสีแดง = ควรเช็ค
 4. ภาพไหนเพี้ยน: `python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/95.jpg --out P-Aligned` คลิกจุดคู่กัน แล้ว run ข้อ 2 ซ้ำ (รอบหลังเร็ว เพราะมี cache)
 
