@@ -1,5 +1,6 @@
-"""Align the one photo in P-FixingImg-big onto the "__" reference next to it,
-then save it as ImageDB/<number>.webp with the photo's metadata."""
+"""Align the one photo in P-FixingImg-big onto the newest earlier ImageDB photo (already
+in the master frame), then save it as ImageDB/<number>.webp with the photo's metadata.
+A "__" image in P-FixingImg-big overrides the reference."""
 
 from pathlib import Path
 
@@ -19,10 +20,13 @@ CONFIG = MatchConfig(
 
 
 def main():
-    ref = find_reference_image(FIXING_FOLDER)
     photo = find_image_to_fix(FIXING_FOLDER)
-    if ref is None or photo is None:
-        logger.error(f"need a '__' reference and a photo in {FIXING_FOLDER} (ref: {ref}, photo: {photo})")
+    if photo is None:
+        logger.error(f"put the new photo in {FIXING_FOLDER}")
+        return
+    ref = find_reference_image(FIXING_FOLDER, photo)
+    if ref is None:
+        logger.error("no reference: ImageDB has no earlier photo and no '__' image is in the folder")
         return
     db_path = db_path_for(photo)
     if not photo.stem.isdigit():

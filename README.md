@@ -18,9 +18,10 @@ Rebuild it by hand with `python PythonScpt/Util/image_index.py ImageDB`.
 
 ภาพ original เต็มขนาดเก็บใน google drive (2025-06-20 onedrive มหาลัยเหลือแค่ 5gb ไม่พอ): <https://drive.google.com/drive/folders/1TMBsS2RonKXjFwxCICXABQEelqACY30W?usp=drive_link>
 
-1. ใน `P-FixingImg-big/` ต้องมีแค่ ref 1 ไฟล์ (ชื่อขึ้นต้นด้วย `__` ตอนนี้คือ `__95.webp`) กับภาพใหม่ 1 ภาพ
+1. ไม่ต้องวาง ref แล้ว: `main.py` ใช้ภาพล่าสุดใน `ImageDB` เป็น ref เอง (ทุกภาพใน ImageDB จัดตรงกับ master 61 แล้ว และภาพล่าสุดฤดูใกล้กันที่สุด จับคู่ได้แม่นกว่า)
+   - อยากล็อก ref เป็นภาพเดียว: ตั้ง `REFERENCE_NUMBER` ใน `PythonScpt/Util/folder_util.py` (เช่น `61`)
+   - อยากใช้ ref อื่นแค่ครั้งเดียว: วางไฟล์ชื่อขึ้นต้นด้วย `__` ใน `P-FixingImg-big/`
    - ย้ายภาพเก่าที่ทำเสร็จแล้วออกก่อน (เช่น `97.JPG`) ไม่งั้น `main.py` จะหยิบภาพเก่าแล้วหยุด เพราะ `ImageDB/97.webp` มีแล้ว
-   - ref เดิมเลือกจาก <https://kkumail-my.sharepoint.com/:f:/p/nattapongtang/EkM0ZmWS6OlBmL3nbDdIvU0Bh8Rl7Ec9tB7EdT2lznck-Q?e=wYcaJh>
 2. วางภาพใหม่ใน `P-FixingImg-big/` ตั้งชื่อเป็นเลขถัดไป เช่น `98.JPG` (ถ้าไม่ใช่เลข จะได้เลขถัดไปให้เอง และเปลี่ยนชื่อไฟล์เป็นเลขนั้น)
 3. ดับเบิลคลิก `run_main.bat` (หรือ `python PythonScpt/main.py` จากโฟลเดอร์ repo)
    ได้ `ImageDB/98.webp` (มีวันที่/GPS จากภาพเดิม) และ `ImageDB/index.json` อัปเดตให้ ถ้า error ดูใน `meangpu.log`
@@ -33,12 +34,13 @@ Rebuild it by hand with `python PythonScpt/Util/image_index.py ImageDB`.
 
 ใช้ตอนอยากให้ทุกภาพตรงกับ ref ตัวเดียว (แก้ปัญหา error สะสมจากการเปลี่ยน ref หลายรอบ)
 
-1. โหลดภาพ original เต็มขนาดทั้งหมดมาไว้ใน `P-Originals/` ตั้งชื่อตามลำดับ `0.jpg`, `1.jpg`, ... (ลำดับเวลาสำคัญ เพราะภาพจะถูกจับคู่กับภาพข้างเคียง)
-2. เลือกภาพ master 1 ภาพ (ฟ้าโปร่ง ไม่มีเงายาว ถ่ายตรงลงมา) แล้ว run
-   `python PythonScpt/batch_align.py --src P-Originals --ref 95 --out P-Aligned`
+1. โหลดภาพ original เต็มขนาดทั้งหมดจาก google drive มาไว้ใน `P-Originals/` ตั้งชื่อตามเลขใน `ImageDB` (`0.jpg`, `1.jpg`, ...) จับคู่ด้วยวันที่ EXIF กับ `ImageDB/index.json` เพราะชื่อไฟล์ใน drive ไม่ตรงเลขทุกภาพ (ลำดับเวลาสำคัญ เพราะภาพจะถูกจับคู่กับภาพข้างเคียง)
+   - ภาพ 9, 87-90 ไม่มี original ใช้ `ImageDB/<เลข>.webp` แทน
+2. master ปัจจุบันคือภาพ 61 (2022-12-25 15:01 เงาสั้นสุด) แล้ว run
+   `python PythonScpt/batch_align.py --src P-Originals --ref 61 --out P-Aligned`
    (ใส่ `--format webp` ถ้าอยากได้ .webp เลย คุณภาพเท่ากับไฟล์ใน ImageDB; ได้ `index.json` ใน `--out` ด้วย ก๊อปไปพร้อมภาพ)
 3. เปิด `P-Aligned/report.html` ภาพที่แย่สุดอยู่บนสุด แถวสีแดง = ควรเช็ค
-4. ภาพไหนเพี้ยน: `python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/95.jpg --out P-Aligned` คลิกจุดคู่กัน แล้ว run ข้อ 2 ซ้ำ (รอบหลังเร็ว เพราะมี cache)
+4. ภาพไหนเพี้ยน: `python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/61.jpg --out P-Aligned` คลิกจุดคู่กัน แล้ว run ข้อ 2 ซ้ำ (รอบหลังเร็ว เพราะมี cache)
 
 ### drone setting
 

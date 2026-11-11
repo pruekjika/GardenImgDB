@@ -2,10 +2,24 @@ from pathlib import Path
 
 IMAGE_PATTERNS = ("*.jpg", "*.webp")
 
+# Every ImageDB photo is aligned to master photo 61 (batch_align.py, 2026-11-11), so any of
+# them is a reference in the master frame. None = the newest ImageDB photo before the new one:
+# closest in season and layout, which matches far better than the old master (a direct
+# cross-season match to the master was ~90 px off at the corners). A number = always that photo.
+REFERENCE_NUMBER = None
 
-def find_reference_image(folder):
-    """The reference is the image whose name starts with "__"."""
-    return _first_image(folder, is_reference=True)
+
+def find_reference_image(folder, photo=None, image_db=Path("ImageDB")):
+    """A "__" image in folder wins (manual override), then REFERENCE_NUMBER, then the newest
+    ImageDB photo numbered before this photo."""
+    ref = _first_image(folder, is_reference=True)
+    if ref is not None:
+        return ref
+    if REFERENCE_NUMBER is not None:
+        return (image_db / f"{REFERENCE_NUMBER}.webp").resolve()
+    limit = int(db_path_for(photo, image_db).stem) if photo is not None else float("inf")
+    numbers = [int(p.stem) for p in image_db.glob("*.webp") if p.stem.isdigit() and int(p.stem) < limit]
+    return (image_db / f"{max(numbers)}.webp").resolve() if numbers else None
 
 
 def find_image_to_fix(folder):
