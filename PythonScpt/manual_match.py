@@ -1,6 +1,6 @@
 """Align a photo by clicking matching points, for when automatic matching is off.
 
-    python PythonScpt/manual_match.py                     photo from P-FixingImg-big, ref = newest earlier ImageDB photo,
+    python PythonScpt/manual_match.py                     photo from P-FixingImg-big, ref = ImageDB/<REFERENCE_NUMBER>.webp,
                                                           result also saved as ImageDB/<number>.webp
     python PythonScpt/manual_match.py --points p.json     reuse saved points (add --edit to adjust)
     python PythonScpt/manual_match.py --photo P-Originals/40.jpg --ref P-Originals/95.jpg --out P-Aligned
@@ -162,7 +162,7 @@ def homography_from_pairs(pairs, img_photo, img_ref, refine=True):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--ref", help='reference image (default: a "__" image in P-FixingImg-big, else the newest earlier ImageDB photo)')
+    parser.add_argument("--ref", help='reference image (default: a "__" image in P-FixingImg-big, else ImageDB/<REFERENCE_NUMBER>.webp)')
     parser.add_argument("--photo", help="photo to align (default: the other image in P-FixingImg-big)")
     parser.add_argument("--out", default=".", help="output folder")
     parser.add_argument("--points", help="saved points json to reuse instead of clicking")
@@ -172,7 +172,7 @@ def main():
 
     fixing_folder = Path("P-FixingImg-big")
     photo = Path(args.photo or find_image_to_fix(fixing_folder) or "")
-    ref = Path(args.ref or (photo.is_file() and find_reference_image(fixing_folder, photo)) or "")
+    ref = Path(args.ref or find_reference_image(fixing_folder))
     if not ref.is_file() or not photo.is_file():
         logger.error(f"ref '{ref}' or photo '{photo}' not found")
         return

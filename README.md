@@ -18,8 +18,8 @@ Rebuild it by hand with `python PythonScpt/Util/image_index.py ImageDB`.
 
 ภาพ original เต็มขนาดเก็บใน google drive (2025-06-20 onedrive มหาลัยเหลือแค่ 5gb ไม่พอ): <https://drive.google.com/drive/folders/1TMBsS2RonKXjFwxCICXABQEelqACY30W?usp=drive_link>
 
-1. ไม่ต้องวาง ref แล้ว: `main.py` ใช้ภาพล่าสุดใน `ImageDB` เป็น ref เอง (ทุกภาพใน ImageDB จัดตรงกับ master 61 แล้ว และภาพล่าสุดฤดูใกล้กันที่สุด จับคู่ได้แม่นกว่า)
-   - อยากล็อก ref เป็นภาพเดียว: ตั้ง `REFERENCE_NUMBER` ใน `PythonScpt/Util/folder_util.py` (เช่น `61`)
+1. ไม่ต้องวาง ref แล้ว: `main.py` ใช้ `ImageDB/91.webp` เป็น ref ตายตัวทุกครั้ง (ตั้งใน `REFERENCE_NUMBER` ที่ `PythonScpt/Util/folder_util.py`) error จึงไม่สะสมต่อกันทีละภาพ
+   - ทำไมไม่ใช่ 61: ภาพปี 2026 จับคู่ตรงกับ 61 (ธ.ค. 2022 สวนยังไม่มีทางเดินขาว) เพี้ยน ~800 px แต่กับ 91 (2025-12-31) เพี้ยนไม่เกิน ~13 px; 91 เองจัดตรงกับ master 61 แล้ว ผลจึงอยู่ในกรอบเดียวกัน
    - อยากใช้ ref อื่นแค่ครั้งเดียว: วางไฟล์ชื่อขึ้นต้นด้วย `__` ใน `P-FixingImg-big/`
    - ย้ายภาพเก่าที่ทำเสร็จแล้วออกก่อน (เช่น `97.JPG`) ไม่งั้น `main.py` จะหยิบภาพเก่าแล้วหยุด เพราะ `ImageDB/97.webp` มีแล้ว
 2. วางภาพใหม่ใน `P-FixingImg-big/` ตั้งชื่อเป็นเลขถัดไป เช่น `98.JPG` (ถ้าไม่ใช่เลข จะได้เลขถัดไปให้เอง และเปลี่ยนชื่อไฟล์เป็นเลขนั้น)
